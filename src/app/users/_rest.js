@@ -25,8 +25,8 @@ router.post("/register", db, asyncHandler(service.register));
 // Get password for download Data
 router.post("/password", db, asyncHandler(service.password));
 
-// Get user by ID
-router.get("/user/:uuid", db, asyncHandler(service.user));
+// Get user by QR Code
+router.get("/user", db, asyncHandler(service.userByQR));
 
 // Get all users
 router.get("/users", db, asyncHandler(service.getData));

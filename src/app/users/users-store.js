@@ -73,8 +73,8 @@ class UserStore {
     });
   }
 
-  async getUserByUUID(uuid) {
-    return await this.db("users").select().where("UUID", uuid).first();
+  async getUserByQR(qrCode) {
+    return await this.db("users").select().where("qr_code", qrCode).first();
   }
 
   async getAll() {

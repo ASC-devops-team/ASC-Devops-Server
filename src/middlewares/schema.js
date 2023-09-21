@@ -27,11 +27,13 @@ const userDao =
             table.integer("status").notNullable().defaultTo(1);
             table.string("qr_code").nullable();
             table.timestamps(true, true);
+            table.index("qr_code");
           })
 
           .createTable("attendance", (table) => {
             table.increments("uuid").primary();
-            table.timestamps(true, true);
+            table.date("date").notNullable();
+            table.string("name").notNullable();
             table.string("setting").nullable();
             table.time("clock_in").notNullable();
             table.time("clock_out").nullable();
@@ -46,10 +48,13 @@ const userDao =
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
+            table.index("date");
+            table.index("name");
           })
 
           .createTable("leave", (table) => {
             table.increments("uuid").primary();
+            table.string("name").notNullable();
             table.timestamps(true, true);
             table.string("type").notNullable();
             table.date("date_from").notNullable();
@@ -72,6 +77,7 @@ const userDao =
               .references("uuid")
               .inTable("attendance")
               .onDelete("CASCADE");
+            table.index("name");
           })
 
           .createTable("logs", (table) => {
@@ -339,6 +345,7 @@ const userDao =
             lastname: "Hernandez",
             // region: "all",
             role: "admin",
+            qr_code: "RAYMOND M. HERNANDEZ - 8-070323",
           },
         ]);
       } catch (error) {

@@ -356,17 +356,17 @@ class UserService {
   }
 
   // Get user by ID
-  async user(req, res, next) {
+  async userByQR(req, res, next) {
     try {
       const store = new Store(req.db);
-      const uuid = req.params.uuid;
-      const user = await store.getUserByUUID(uuid);
-      if (!user) {
+      const qrCode = req.query.qr_code;
+      const result = await store.getUserByQR(qrCode);
+      if (!result) {
         throw new NotFoundError("User not found");
       }
       return res.status(200).send({
         success: true,
-        data: user,
+        data: result,
       });
     } catch (err) {
       next(err);
@@ -378,11 +378,8 @@ class UserService {
     try {
       const store = new Store(req.db);
       const search = req.query.search;
-
       let users = [];
-
       const hasData = await store.getAll();
-
       if (hasData.length > 0) {
         users = await store.search(search);
       } else {
