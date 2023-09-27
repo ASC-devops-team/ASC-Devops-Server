@@ -26,8 +26,10 @@ const userDao =
             table.string("refresh_token").nullable();
             table.integer("status").notNullable().defaultTo(1);
             table.string("qr_code").nullable();
+            table.string("fingerprint").nullable();
             table.timestamps(true, true);
             table.index("qr_code");
+            table.index("fingerprint");
           })
 
           .createTable("attendance", (table) => {

@@ -39,8 +39,10 @@ class UserStore {
     return await this.db("users").where("UUID", uuid).update({
       // username: body.username,
       // password: hash,
-      firstname: body.firstname,
-      lastname: body.lastname,
+      firstname: body?.firstname,
+      lastname: body?.lastname,
+      qr_code: body?.qr_code,
+      fingerprint: body?.fingerprint,
       // region: body.region,
       // role: body.role,
       // refresh_token: body.refresh_token,
