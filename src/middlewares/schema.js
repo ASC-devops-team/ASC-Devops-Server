@@ -29,7 +29,6 @@ const userDao =
             table.string("fingerprint").nullable();
             table.timestamps(true, true);
             table.index("qr_code");
-            table.index("fingerprint");
           })
 
           .createTable("attendance", (table) => {
@@ -347,7 +346,6 @@ const userDao =
             lastname: "Hernandez",
             // region: "all",
             role: "admin",
-            qr_code: "RAYMOND M. HERNANDEZ - 8-070323",
           },
         ]);
       } catch (error) {
