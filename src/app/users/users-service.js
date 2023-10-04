@@ -4,11 +4,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userId = 1;
 require("dotenv").config();
-
 const {
   NotFoundError,
   BadRequestError,
-  errorHandler,
   AuthenticationError,
 } = require("../../middlewares/errors");
 const moduleName = "Authentication";
@@ -362,14 +360,26 @@ class UserService {
       const qrCode = req.query.qr_code;
       const result = await store.getUserByQR(qrCode);
       if (!result) {
-        throw new NotFoundError("User not found");
+        throw new NotFoundError(
+          "Resource not found, QR code not registered."
+        );
       }
       return res.status(200).send({
         success: true,
         data: result,
       });
-    } catch (err) {
-      next(err);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return res.status(404).json({
+          success: false,
+          error: error.name,
+          message: error.message,
+        });
+      } else {
+        return res
+          .status(500)
+          .send({ success: false, error: "Internal Server Error" });
+      }
     }
   }
 

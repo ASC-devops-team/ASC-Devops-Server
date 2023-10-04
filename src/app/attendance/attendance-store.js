@@ -1,8 +1,11 @@
 const { query } = require("express");
+const TableConfig = require("../../configuration/attendanceConfig");
 
 class AttendanceStore {
   constructor(db) {
     this.db = db;
+    this.table = TableConfig.tableName;
+    this.cols = TableConfig.columnNames;
   }
 
   // CREATE
@@ -22,6 +25,26 @@ class AttendanceStore {
           user_id: body.user_id,
         });
         resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  // GET EXISTING
+  async getByUerIdAndDate(userId, date) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this.db("attendance")
+          .select()
+          .where(this.cols.userid, userId)
+          .andWhere(this.cols.date, date)
+          .first();
+        if (result) {
+          resolve(result);
+        } else {
+          resolve(null);
+        }
       } catch (error) {
         reject(error);
       }

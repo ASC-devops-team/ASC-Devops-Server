@@ -10,7 +10,7 @@ class AttendaceService {
       const logs = new Logs(req.db);
       const body = req.body;
       body.clock_in = new Date();
-      body.date = new Date ();
+      body.date = new Date();
       const result = await store.add(body);
       res.status(201).json({
         success: true,
@@ -29,6 +29,21 @@ class AttendaceService {
       if (!result) {
         result = [];
       }
+      return res.status(200).send({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // GET EXISTING
+  async getByUerIdAndDate(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const { userId, date } = req.query;
+      const result = await store.getByUerIdAndDate(userId, date);
       return res.status(200).send({
         success: true,
         data: result,

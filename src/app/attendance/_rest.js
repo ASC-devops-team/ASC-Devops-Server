@@ -14,6 +14,9 @@ router.post("/attendance", db, asyncHandler(service.add));
 // READS
 router.get("/attendance/get", db, asyncHandler(service.getAll));
 
+// GET EXISTING
+router.get("/attendance/get/existing", db, asyncHandler(service.getByUerIdAndDate));
+
 // READ
 router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
 
