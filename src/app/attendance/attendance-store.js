@@ -65,30 +65,22 @@ class AttendanceStore {
     });
   }
 
+  // UPDATE
+  async update(uuid, body) {
+    await this.db(this.table).where(this.cols.id, uuid).update(body);
+    const updatedRows = await this.db(this.table)
+      .where(this.cols.id, uuid)
+      .select("*")
+      .first();
+    return updatedRows;
+  }
+
   // READ
   async getById(uuid) {
     const results = await this.db(this.table)
       .select()
       .where(this.cols.id, uuid);
     return results;
-  }
-
-  // UPDATE
-  async update(uuid, body) {
-    await this.db(this.table).where(this.cols.id, uuid).update({
-      item_code: body.item_code,
-      brand_id: body.brand_id,
-      category_id: body.category_id,
-      supplier_id: body.supplier_id,
-      name: body.name,
-      description: body.description,
-      added_by: body.added_by,
-    });
-    const updatedRows = await this.db(this.table)
-      .where(this.cols.id, uuid)
-      .select("*")
-      .first();
-    return updatedRows;
   }
 
   // DELETE

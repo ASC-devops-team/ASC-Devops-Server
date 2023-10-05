@@ -15,13 +15,17 @@ router.post("/attendance", db, asyncHandler(service.add));
 router.get("/attendance/get", db, asyncHandler(service.getAll));
 
 // GET EXISTING
-router.get("/attendance/get/existing", db, asyncHandler(service.getByUerIdAndDate));
-
-// READ
-router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
+router.get(
+  "/attendance/get/existing",
+  db,
+  asyncHandler(service.getByUerIdAndDate)
+);
 
 // UPDATE
 router.put("/attendance/update/:uuid", db, asyncHandler(service.update));
+
+// READ
+router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
 
 // DELETE
 router.delete("/attendance/delete/:uuid", db, asyncHandler(service.delete));

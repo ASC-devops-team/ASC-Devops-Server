@@ -77,7 +77,6 @@ class UserStore {
 
   async getUserByQR(qrCode) {
     const result =  await this.db(this.table).select().where(this.cols.qrCode, qrCode).first();
-    console.log(result)
     return result;
   }
 
