@@ -22,7 +22,7 @@ router.get(
 );
 
 // UPDATE
-router.put("/attendance/update/:uuid", db, asyncHandler(service.update));
+router.put("/attendance/update", db, asyncHandler(service.update));
 
 // READ
 router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));

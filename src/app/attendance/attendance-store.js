@@ -66,10 +66,17 @@ class AttendanceStore {
   }
 
   // UPDATE
-  async update(uuid, body) {
-    await this.db(this.table).where(this.cols.id, uuid).update(body);
+  async update(body) {
+    console.log(body);
+    await this.db(this.table).where(this.cols.id, body.uuid).update({
+      clock_out: body.clock_out,
+      undertime: body.undertime,
+      overtime: body.overtime,
+      // total_hours: body.total_hours,
+      status: body.status,
+    });
     const updatedRows = await this.db(this.table)
-      .where(this.cols.id, uuid)
+      .where(this.cols.id, body.uuid)
       .select("*")
       .first();
     return updatedRows;
