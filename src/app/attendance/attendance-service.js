@@ -5,40 +5,39 @@ const { NotFoundError } = require("../../middlewares/errors");
 class AttendaceService {
   // CLOCK IN
   async add(req, res, next) {
-    const current = new Date();
-    const currentTime = current.getTime(); // Get current time in milliseconds
-    const sevenAM = new Date();
-    sevenAM.setHours(7, 0, 0, 0);
-    const eightAM = new Date();
-    eightAM.setHours(8, 0, 0, 0);
-
     try {
+      const current = new Date();
+      const currentTime = current.getTime();
       const store = new Store(req.db);
-      // const logs = new Logs(req.db);
       const body = req.body;
-      const userRole = req.query.userRole; // Assuming you have defined userRole
-      let status = null;
-      let late = null;
+      const userRole = req.query.userRole;
 
-      // Determine the status based on userRole and currentTime
-      if (userRole === "user" && currentTime < sevenAM.getTime()) {
-        status = "Present";
-        late = getLateTime(sevenAM.getTime(), currentTime);
-      }
-      if (userRole === "superadmin" && currentTime < eightAM.getTime()) {
-        status = "Present";
-        late = getLateTime(eightAM.getTime(), currentTime);
-      } else {
-        status = "Late";
+      const checkTimes = [
+        { role: "user", start: 7 },
+        { role: "superadmin", start: 8 },
+      ];
+
+      const roleInfo = checkTimes.find((info) => info.role === userRole);
+
+      if (!roleInfo) {
+        throw new Error("Invalid userRole");
       }
 
-      // Set the late time in the body
+      const startWorkTime = buildTime(roleInfo.start);
+
+      let status = currentTime < startWorkTime ? "Present" : "Late";
+      let late =
+        status === "Late"
+          ? getTimeDifference(startWorkTime, currentTime)
+          : null;
+
       body.clock_in = current;
       body.date = current;
       body.late = late;
       body.status = status;
 
       const result = await store.add(body);
+
       res.status(201).json({
         success: true,
         data: result,
@@ -50,52 +49,52 @@ class AttendaceService {
 
   // CLOCK OUT
   async update(req, res, next) {
-    const current = new Date();
-    const currentTime = current.getTime(); // Get current time in milliseconds
-    const fourPM = new Date();
-    fourPM.setHours(16, 0, 0, 0);
-    const fivePM = new Date();
-    fivePM.setHours(17, 0, 0, 0);
-    const sixPM = new Date();
-    sixPM.setHours(18, 0, 0, 0);
-
     try {
       const store = new Store(req.db);
       const body = req.body;
       const userRole = req.query.userRole; // Assuming you have defined userRole
 
+      const current = new Date();
+      const currentTime = current.getTime(); // Get current time in milliseconds
+
+      const checkTimes = [
+        { role: "user", start: 16, end: 17 },
+        { role: "superadmin", start: 17, end: 18 },
+      ];
+
       let undertime = null;
       let overtime = null;
       let status = body.status;
 
-      // Determine the status based on userRole and currentTime
-      if (userRole === "user" && currentTime < fourPM.getTime()) {
-        status = `${status} & Undertime`;
-        undertime = getUndertime(fourPM.getTime(), currentTime);
-      } else if (
-        userRole === "user" &&
-        currentTime > fivePM.getTime() &&
-        status === "Present"
-      ) {
-        status = "Overtime";
-        overtime = getOvertime(fourPM.getTime(), currentTime);
-      }
-      if (userRole === "superadmin" && currentTime < fivePM.getTime()) {
-        status = `${status} & Undertime`;
-        undertime = getUndertime(fivePM.getTime(), currentTime);
-      } else if (
-        userRole === "superadmin" &&
-        currentTime > sixPM.getTime() &&
-        status === "Present"
-      ) {
-        status = "Overtime";
-        overtime = getOvertime(fivePM.getTime(), currentTime);
-      } else {
-        status = body.status;
+      for (const checkTime of checkTimes) {
+        if (userRole === checkTime.role) {
+          if (currentTime < buildTime(checkTime.start) && status === "Late") {
+            status = "Late & Undertime";
+            undertime = getTimeDifference(
+              currentTime,
+              buildTime(checkTime.start)
+            );
+          } else if (
+            currentTime < buildTime(checkTime.start) &&
+            status === "Present"
+          ) {
+            status = "Undertime";
+            undertime = getTimeDifference(
+              buildTime(checkTime.start),
+              currentTime
+            );
+          } else if (currentTime > buildTime(checkTime.end)) {
+            status = "Overtime";
+            overtime = getTimeDifference(
+              currentTime,
+              buildTime(checkTime.start)
+            );
+          }
+          break; // Exit the loop after finding the applicable role
+        }
       }
 
       body.clock_out = current;
-      // body.total_hours = totalHoursWorked;
       body.undertime = undertime;
       body.overtime = overtime;
       body.status = status;
@@ -135,8 +134,6 @@ class AttendaceService {
     try {
       const store = new Store(req.db);
       const { userId, date } = req.query;
-      console.log(userId);
-      console.log(date);
       const result = await store.getByUerIdAndDate(userId, date);
       return res.status(200).send({
         success: true,
@@ -195,40 +192,20 @@ class AttendaceService {
   }
 }
 
-function getOvertime(time, currentTime) {
-  // Calculate the time difference between current time and 8 AM
-  const timeDifferenceMs = currentTime - time;
-  const hours = Math.floor(timeDifferenceMs / (60 * 60 * 1000)); // Hours
-  const minutes = Math.floor(
-    (timeDifferenceMs % (60 * 60 * 1000)) / (60 * 1000)
-  );
-  const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000); // Seconds
-  // Format the late time as a string (e.g., "4:05:23")
-  return (time = `${hours}:${minutes}:${seconds}`);
+function buildTime(hours) {
+  const time = new Date();
+  time.setHours(hours, 0, 0, 0);
+  return time.getTime();
 }
 
-function getUndertime(time, currentTime) {
-  // Calculate the time difference between current time and 8 AM
-  const timeDifferenceMs = time - currentTime;
-  const hours = Math.floor(timeDifferenceMs / (60 * 60 * 1000)); // Hours
+function getTimeDifference(startTime, endTime) {
+  const timeDifferenceMs = Math.abs(endTime - startTime);
+  const hours = Math.floor(timeDifferenceMs / (60 * 60 * 1000));
   const minutes = Math.floor(
     (timeDifferenceMs % (60 * 60 * 1000)) / (60 * 1000)
   );
-  const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000); // Seconds
-  // Format the late time as a string (e.g., "4:05:23")
-  return (time = `${hours}:${minutes}:${seconds}`);
-}
-
-function getLateTime(time, currentTime) {
-  // Calculate the time difference between current time and 8 AM
-  const timeDifferenceMs = currentTime - time;
-  const hours = Math.floor(timeDifferenceMs / (60 * 60 * 1000)); // Hours
-  const minutes = Math.floor(
-    (timeDifferenceMs % (60 * 60 * 1000)) / (60 * 1000)
-  );
-  const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000); // Seconds
-  // Format the late time as a string (e.g., "4:05:23")
-  return (time = `${hours}:${minutes}:${seconds}`);
+  const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000);
+  return `${hours}:${minutes}:${seconds}`;
 }
 
 module.exports = AttendaceService;
