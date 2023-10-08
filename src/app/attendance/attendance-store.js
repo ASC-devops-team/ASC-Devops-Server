@@ -1,4 +1,5 @@
 const { query } = require("express");
+const moment = require("moment-timezone");
 const TableConfig = require("../../configuration/attendanceConfig");
 
 class AttendanceStore {
@@ -52,17 +53,21 @@ class AttendanceStore {
   }
 
   // READS
-  async getAll() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this.db(this.table)
-          .select()
-          .orderBy([{ column: "date", order: "desc" }]);
-        resolve(result);
-      } catch (error) {
-        reject(error);
+  async getData(startDate, endDate) {
+    try {
+      let query = this.db(this.table).select().orderBy("date", "desc");
+      if (startDate && endDate) {
+        query = query.whereBetween("date", [startDate, endDate]);
       }
-    });
+      const results = await query;
+      const convertedResults = convertDatesToTimezone(
+        results.map((row) => row),
+        [this.cols.date]
+      );
+      return convertedResults;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // UPDATE
@@ -98,6 +103,28 @@ class AttendanceStore {
     await this.db(this.table).where(this.cols.id, uuid).del();
     return deletedRows;
   }
+}
+
+function formatDate(dateString) {
+  const date = moment(dateString, "YYYY/MM/DD", true);
+  if (!date.isValid()) {
+    return "";
+  } // code from TAD reports
+  return date.format("YYYY-MM-DD");
+}
+
+function convertDatesToTimezone(rows, dateFields) {
+  return rows.map((row) => {
+    const convertedFields = {};
+    dateFields.forEach((field) => {
+      const convertedDate = moment
+        .utc(row[field])
+        .tz("Asia/Singapore")
+        .format("YYYY-MM-DD");
+      convertedFields[field] = convertedDate;
+    });
+    return { ...row, ...convertedFields };
+  });
 }
 
 module.exports = AttendanceStore;

@@ -102,11 +102,12 @@ class AttendaceService {
   }
 
   // READS
-  async getAll(req, res, next) {
+  async getData(req, res, next) {
     let result = [];
     try {
       const store = new Store(req.db);
-      result = await store.getAll();
+      const { startDate, endDate } = req.query;
+      result = await store.getData(startDate, endDate);
       return res.status(200).send({
         success: true,
         data: result,

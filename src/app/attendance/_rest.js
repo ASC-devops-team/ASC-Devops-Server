@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/attendance", db, asyncHandler(service.add));
 
 // READS
-router.get("/attendance/get", db, asyncHandler(service.getAll));
+router.get("/attendance/get", db, asyncHandler(service.getData));
 
 // GET EXISTING
 router.get(
