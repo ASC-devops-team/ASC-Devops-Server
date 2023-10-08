@@ -12,7 +12,7 @@ class AttendanceStore {
   async add(body) {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.db("attendance").insert({
+        const result = await this.db(this.table).insert({
           date: body.date,
           name: body.name,
           setting: body.setting,
@@ -35,7 +35,7 @@ class AttendanceStore {
   async getByUerIdAndDate(userId, date) {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.db("attendance")
+        const result = await this.db(this.table)
           .select()
           .where(this.cols.userid, userId)
           .andWhere(this.cols.date, date)
@@ -55,9 +55,9 @@ class AttendanceStore {
   async getAll() {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.db("attendance")
+        const result = await this.db(this.table)
           .select()
-          .orderBy([{ column: "created_at", order: "desc" }]);
+          .orderBy([{ column: "date", order: "desc" }]);
         resolve(result);
       } catch (error) {
         reject(error);
@@ -72,6 +72,7 @@ class AttendanceStore {
       undertime: body.undertime,
       overtime: body.overtime,
       status: body.status,
+      total_work_hours: body.work_hours,
     });
     const updatedRows = await this.db(this.table)
       .where(this.cols.id, body.uuid)

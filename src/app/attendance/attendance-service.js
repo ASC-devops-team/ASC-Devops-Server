@@ -61,42 +61,31 @@ class AttendaceService {
         { role: "user", start: 16, end: 17 },
         { role: "superadmin", start: 17, end: 18 },
       ];
+      // Calculate total work hours excluding lunch break
+      const lunchStart = buildTime(12);
+      const lunchEnd = buildTime(13);
+      const clockInTime = parseClockInDateTime(body.date, body.clock_in);
 
-      let undertime = null;
-      let overtime = null;
-      let status = body.status;
+      // Calculate total work hours based on clock_in and current time, excluding lunch break
+      const totalWorkHours = calculateTotalWorkHours(
+        clockInTime,
+        current,
+        lunchStart,
+        lunchEnd
+      );
 
-      for (const checkTime of checkTimes) {
-        if (userRole === checkTime.role) {
-          if (currentTime < buildTime(checkTime.start) && status === "Late") {
-            status = "Late & Undertime";
-            undertime = getTimeDifference(
-              currentTime,
-              buildTime(checkTime.start)
-            );
-          } else if (
-            currentTime < buildTime(checkTime.start) &&
-            status === "Present"
-          ) {
-            status = "Undertime";
-            undertime = getTimeDifference(
-              buildTime(checkTime.start),
-              currentTime
-            );
-          } else if (currentTime > buildTime(checkTime.end)) {
-            status = "Overtime";
-            overtime = getTimeDifference(
-              currentTime,
-              buildTime(checkTime.start)
-            );
-          }
-          break; // Exit the loop after finding the applicable role
-        }
-      }
+      let { status, undertime, overtime } = calculateStatusAndTimes(
+        userRole,
+        currentTime,
+        body.status,
+        clockInTime,
+        checkTimes
+      );
 
       body.clock_out = current;
       body.undertime = undertime;
       body.overtime = overtime;
+      body.work_hours = totalWorkHours;
       body.status = status;
 
       const result = await store.update(body);
@@ -114,12 +103,10 @@ class AttendaceService {
 
   // READS
   async getAll(req, res, next) {
+    let result = [];
     try {
       const store = new Store(req.db);
       result = await store.getAll();
-      if (!result) {
-        result = [];
-      }
       return res.status(200).send({
         success: true,
         data: result,
@@ -192,6 +179,35 @@ class AttendaceService {
   }
 }
 
+function calculateTotalWorkHours(
+  clockInTime,
+  clockOutTime,
+  lunchStart,
+  lunchEnd
+) {
+  // Calculate lunch break duration
+  const lunchBreakDuration = Math.max(
+    0,
+    Math.min(clockOutTime, lunchEnd) - Math.max(clockInTime, lunchStart)
+  );
+  // Calculate total work duration
+  const totalWorkDuration = clockOutTime - clockInTime - lunchBreakDuration;
+  // Convert the total work duration to hours, minutes, and seconds
+  const hours = Math.floor(totalWorkDuration / (60 * 60 * 1000));
+  const minutes = Math.floor(
+    (totalWorkDuration % (60 * 60 * 1000)) / (60 * 1000)
+  );
+  const seconds = Math.floor((totalWorkDuration % (60 * 1000)) / 1000);
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function parseClockInDateTime(dateStr, timeStr) {
+  const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+  const clockInTime = new Date(dateStr);
+  clockInTime.setHours(hours, minutes, seconds, 0);
+  return clockInTime;
+}
+
 function buildTime(hours) {
   const time = new Date();
   time.setHours(hours, 0, 0, 0);
@@ -206,6 +222,42 @@ function getTimeDifference(startTime, endTime) {
   );
   const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000);
   return `${hours}:${minutes}:${seconds}`;
+}
+
+function calculateStatusAndTimes(
+  userRole,
+  currentTime,
+  status,
+  clockInTime,
+  checkTimes
+) {
+  let undertime = null;
+  let overtime = null;
+  for (const checkTime of checkTimes) {
+    if (userRole === checkTime.role) {
+      if (currentTime < buildTime(checkTime.start) && status === "Present") {
+        status = "Undertime";
+        undertime = getTimeDifference(buildTime(checkTime.start), currentTime);
+      } else if (
+        currentTime < buildTime(checkTime.start) &&
+        status === "Late"
+      ) {
+        status = "Late & Undertime";
+        undertime = getTimeDifference(currentTime, buildTime(checkTime.start));
+      } else if (
+        currentTime > buildTime(checkTime.end) &&
+        status === "Present"
+      ) {
+        status = "Overtime";
+        overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
+      } else if (currentTime > buildTime(checkTime.end) && status === "Late") {
+        status = "Late & Overtime";
+        overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
+      }
+      break; // Exit the loop after finding the applicable role
+    }
+  }
+  return { status, undertime, overtime };
 }
 
 module.exports = AttendaceService;

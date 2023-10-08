@@ -41,6 +41,7 @@ const userDao =
             table.time("late").nullable();
             table.time("undertime").nullable();
             table.time("overtime").nullable();
+            table.time("total_work_hours").nullable();
             table.string("status").nullable();
             table
               .integer("user_id")
