@@ -25,7 +25,7 @@ class AttendaceService {
 
       const startWorkTime = buildTime(roleInfo.start);
 
-      let status = currentTime < startWorkTime ? "Present" : "Late";
+      let status = currentTime <= startWorkTime ? "Present" : "Late";
       let late =
         status === "Late"
           ? getTimeDifference(startWorkTime, currentTime)
@@ -78,8 +78,8 @@ class AttendaceService {
         userRole,
         currentTime,
         body.status,
-        clockInTime,
-        checkTimes
+        checkTimes,
+        totalWorkHours
       );
 
       body.clock_out = current;
@@ -202,6 +202,7 @@ function calculateTotalWorkHours(
   return `${hours}:${minutes}:${seconds}`;
 }
 
+// Format the clock_in time from the database that is readable by calculateTotalWorkHours function
 function parseClockInDateTime(dateStr, timeStr) {
   const [hours, minutes, seconds] = timeStr.split(":").map(Number);
   const clockInTime = new Date(dateStr);
@@ -229,32 +230,43 @@ function calculateStatusAndTimes(
   userRole,
   currentTime,
   status,
-  clockInTime,
-  checkTimes
+  checkTimes,
+  totalWorkHours
 ) {
   let undertime = null;
   let overtime = null;
+  const hour = parseInt(totalWorkHours.split(":")[0]);
   for (const checkTime of checkTimes) {
     if (userRole === checkTime.role) {
-      if (currentTime < buildTime(checkTime.start) && status === "Present") {
-        status = "Undertime";
-        undertime = getTimeDifference(buildTime(checkTime.start), currentTime);
-      } else if (
-        currentTime < buildTime(checkTime.start) &&
-        status === "Late"
-      ) {
-        status = "Late & Undertime";
-        undertime = getTimeDifference(currentTime, buildTime(checkTime.start));
-      } else if (
-        currentTime > buildTime(checkTime.end) &&
-        status === "Present"
-      ) {
-        status = "Overtime";
-        overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
-      } else if (currentTime > buildTime(checkTime.end) && status === "Late") {
-        status = "Late & Overtime";
-        overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
-      }
+      if (hour < 8) {
+        if (currentTime < buildTime(checkTime.start) && status === "Present") {
+          status = "Undertime";
+          undertime = getTimeDifference(
+            buildTime(checkTime.start),
+            currentTime
+          );
+        } else if (
+          currentTime < buildTime(checkTime.start) &&
+          status === "Late"
+        ) {
+          status = "Late & Undertime";
+          undertime = getTimeDifference(
+            currentTime,
+            buildTime(checkTime.start)
+          );
+        }
+      } else if (hour >= 9) {
+        if (currentTime > buildTime(checkTime.end) && status === "Present") {
+          status = "Overtime";
+          overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
+        } else if (
+          currentTime > buildTime(checkTime.end) &&
+          status === "Late"
+        ) {
+          status = "Late & Overtime";
+          overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
+        }
+      } 
       break; // Exit the loop after finding the applicable role
     }
   }

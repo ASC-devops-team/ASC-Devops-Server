@@ -60,8 +60,14 @@ class AttendanceStore {
         query = query.whereBetween("date", [startDate, endDate]);
       }
       const results = await query;
+      // Filter out data with dates beyond the current date
+      const currentDate = new Date();
+      const filteredResults = results.filter((row) => {
+        const rowDate = new Date(row.date);
+        return rowDate <= currentDate;
+      });
       const convertedResults = convertDatesToTimezone(
-        results.map((row) => row),
+        filteredResults.map((row) => row),
         [this.cols.date]
       );
       return convertedResults;

@@ -36,7 +36,7 @@ const userDao =
             table.date("date").notNullable();
             table.string("name").notNullable();
             table.string("setting").nullable();
-            table.time("clock_in").notNullable();
+            table.time("clock_in").nullable();
             table.time("clock_out").nullable();
             table.time("late").nullable();
             table.time("undertime").nullable();
