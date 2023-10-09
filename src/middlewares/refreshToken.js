@@ -6,12 +6,12 @@ const refreshToken = (req, res, next) => {
   const refreshToken = cookies.jwt;
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-    if (err || foundUser.username !== decoded.username) {
+    if (err || foundUser.email !== decoded.email) {
       return res.sendStatus(403);
     }
 
     const accessToken = jwt.sign(
-      { username: decoded.username },
+      { email: decoded.email },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "30s",

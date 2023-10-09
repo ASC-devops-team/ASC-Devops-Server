@@ -18,15 +18,30 @@ const userDao =
         await req.db.schema
           .createTable("users", async (table) => {
             table.increments("uuid").primary();
-            table.string("username").notNullable().unique();
+            table.string("email").notNullable().unique();
             table.string("password").notNullable();
             table.string("firstname").notNullable();
+            table.string("middlename").notNullable();
             table.string("lastname").notNullable();
-            table.string("role").notNullable();
-            table.string("refresh_token").nullable();
-            table.integer("status").notNullable().defaultTo(1);
+            table.string("suffix").nullable();
+            table.string("maidenname").nullable();
+            table.string("access_level").notNullable();
+            table.string("position").notNullable();
+            table.date("date_hired").notNullable();
+            table.date("birthday").notNullable();
+            table.string("civil_status").notNullable();
+            table.string("contact_number").notNullable();
+            table.string("address").notNullable();
+            table.string("sss").notNullable();
+            table.string("tin").notNullable();
+            table.string("hdmf").notNullable();
+            table.string("philhealth").notNullable();
+            table.string("emergency_contact_person").nullable();
+            table.string("emergency_contact_number").nullable();
             table.string("qr_code").nullable();
             table.string("fingerprint").nullable();
+            table.integer("status").notNullable().defaultTo(1);
+            table.string("refresh_token").nullable();
             table.timestamps(true, true);
             table.index("qr_code");
           })
@@ -323,30 +338,73 @@ const userDao =
 
         await req.db("users").insert([
           {
-            username: "admin",
+            email: "raymond.hernandez@asc.com.ph",
             password:
               "$2a$12$yFR3vYP2w9odValFIuuNYeZNfAie0tLmy5x6fH1NKw38ftIKMBKCe",
-            firstname: "Tony",
-            lastname: "Stark",
-            role: "superadmin",
-          },
-          {
-            username: "BossIan",
-            password:
-              "$2a$12$kIpzC4.O.tvwMQ0q7HaH7.v7usQ/jrl2SKq8CZ1MTpAGa72d1rv/2",
-            firstname: "Ian",
-            lastname: "Salita",
-            // region: "all",
-            role: "superadmin",
-          },
-          {
-            username: "Rayder",
-            password:
-              "$2b$10$qSTG1Qk0/XD5HS0vTz.E.eIWQCAJPQSrEbq8Zc.rmtUm6.8NVT2m6",
-            firstname: "Ray",
+            firstname: "Raymond",
+            middlename: "Anabe",
             lastname: "Hernandez",
-            // region: "all",
-            role: "admin",
+            maidenname: "Martin",
+            access_level: "Superadmin",
+            position: "IT developer specialist",
+            date_hired: "2023-07-01",
+            birthday: "1996-07-17",
+            civil_status: "Single",
+            contact_number: "09255233919",
+            address:
+              "Blk 12 Lot 44 Gwapito St. Springville Garden III, Phase 1, Molino IV, Imus, Cavite",
+            sss: "1656516214",
+            tin: "5467347",
+            hdmf: "9647847",
+            philhealth: "243532652",
+            emergency_contact_person: "09255233919",
+            emergency_contact_number: "09255233919",
+          },
+          {
+            email: "ian.salita@asc.com.ph",
+            password:
+              "$2a$12$yFR3vYP2w9odValFIuuNYeZNfAie0tLmy5x6fH1NKw38ftIKMBKCe",
+            firstname: "Ian",
+            middlename: "Speak",
+            lastname: "Salita",
+            maidenname: "Talk",
+            access_level: "Superadmin",
+            position: "IT developer specialist",
+            date_hired: "2023-07-01",
+            birthday: "1996-07-17",
+            civil_status: "Single",
+            contact_number: "09255233919",
+            address:
+              "Blk 12 Lot 44 Gwapito St. Springville Garden III, Phase 1, Molino IV, Imus, Cavite",
+            sss: "1656516214",
+            tin: "5467347",
+            hdmf: "9647847",
+            philhealth: "243532652",
+            emergency_contact_person: "09255233919",
+            emergency_contact_number: "09255233919",
+          },
+          {
+            email: "johnpaul.miraflores@asc.com.ph",
+            password:
+              "$2a$12$yFR3vYP2w9odValFIuuNYeZNfAie0tLmy5x6fH1NKw38ftIKMBKCe",
+            firstname: "John Paul",
+            middlename: "Chixboy",
+            lastname: "Miraflores",
+            maidenname: "Heartbreaker",
+            access_level: "Superadmin",
+            position: "IT developer specialist",
+            date_hired: "2023-07-01",
+            birthday: "1996-07-17",
+            civil_status: "Single",
+            contact_number: "09255233919",
+            address:
+              "Blk 12 Lot 44 Gwapito St. Springville Garden III, Phase 1, Molino IV, Imus, Cavite",
+            sss: "1656516214",
+            tin: "5467347",
+            hdmf: "9647847",
+            philhealth: "243532652",
+            emergency_contact_person: "09255233919",
+            emergency_contact_number: "09255233919",
           },
         ]);
       } catch (error) {

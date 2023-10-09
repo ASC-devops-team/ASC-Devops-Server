@@ -21,14 +21,14 @@ class UserService {
     try {
       const store = new Store(req.db);
       const logs = new Logs(req.db);
-      // const { username, password } = req.body;
+      // const { email, password } = req.body;
       const body = req.body;
-      if (!body.username || !body.password) {
-        throw new BadRequestError("Username and password are required");
+      if (!body.email || !body.password) {
+        throw new BadRequestError("Email and password are required");
       }
-      const user = await store.getUsername(body.username);
+      const user = await store.getUsername(body.email);
       if (!user) {
-        throw new NotFoundError("Username not found");
+        throw new NotFoundError("Email not found");
       }
       const validPassword = await bcrypt.compare(body.password, user.password);
       if (!validPassword) {
@@ -38,15 +38,15 @@ class UserService {
       const accessToken = jwt.sign(
         {
           UserInfo: {
-            username: user.username,
-            role: user.role,
+            email: user.email,
+            access_level: user.access_level,
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "30s" }
       );
       const refreshToken = jwt.sign(
-        { username: user.username },
+        { email: user.email },
         process.env.REFRESH_TOKEN_SECRET,
         {
           expiresIn: "30s",
@@ -55,7 +55,7 @@ class UserService {
 
       store.updateRefreshToken(user.uuid, user, refreshToken);
 
-      const updatedUser = await store.getUsername(body.username);
+      const updatedUser = await store.getUsername(body.email);
 
       logs.add({
         uuid: user.uuid,
@@ -87,7 +87,7 @@ class UserService {
       } else if (err instanceof NotFoundError) {
         return res
           .status(404)
-          .send({ success: false, error: "Username not found" });
+          .send({ success: false, error: "Email not found" });
       } else {
         return res
           .status(500)
@@ -151,13 +151,13 @@ class UserService {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
         (err, decoded) => {
-          if (err || foundUser.username !== decoded?.username) {
+          if (err || foundUser.email !== decoded?.email) {
             console.log(err);
             return res.sendStatus(403);
           }
           const accessToken = jwt.sign(
             {
-              username: decoded.username,
+              email: decoded.email,
             },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: "30s" }
@@ -204,13 +204,13 @@ class UserService {
       // Hash the password
       const hash = await bcrypt.hash(body.password, 10);
       // Validate input
-      if (!body.username || !body.password) {
-        throw new BadRequestError("Username and password are required");
+      if (!body.email || !body.password) {
+        throw new BadRequestError("Email and password are required");
       }
       // Check if the user already exists
-      const hasUser = await store.getUsername(body.username);
+      const hasUser = await store.getUsername(body.email);
       if (hasUser) {
-        throw new BadRequestError("Username already exists");
+        throw new BadRequestError("Email already exists");
       }
       // Insert the new user into the database
       const result = await store.registerUser(body, hash);

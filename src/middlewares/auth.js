@@ -21,8 +21,8 @@ const auth = (req, res, next) => {
     }
 
     // req.auth = decoded;
-    req.user = decoded.username;
-    req.role = decoded.role;
+    req.user = decoded.email;
+    req.access_level = decoded.access_level;
     next();
   });
 };

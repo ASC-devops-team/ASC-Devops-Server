@@ -7,29 +7,29 @@ class UserStore {
     this.cols = TableConfig.columnNames;
   }
 
-  async getUsername(username) {
-    return await this.db("users").where("username", username).first();
+  async getUsername(email) {
+    return await this.db("users").where("email", email).first();
   }
 
   async registerUser(body, hash) {
     return await this.db("users").insert({
-      username: body.username,
+      email: body.email,
       password: hash,
       firstname: body.firstname,
       lastname: body.lastname,
       // region: body.region,
-      role: body.role,
+      access_level: body.access_level,
     });
   }
 
   async updateUser(uuid, body, hash) {
     return await this.db("users").where("UUID", uuid).update({
-      // username: body.username,
+      // email: body.email,
       // password: hash,
       firstname: body.firstname,
       lastname: body.lastname,
       // region: body.region,
-      role: body.role,
+      access_level: body.access_level,
       // refresh_token: body.refresh_token,
       status: body.status,
     });
@@ -37,26 +37,26 @@ class UserStore {
 
   async updateUserPersonal(uuid, body, hash) {
     return await this.db("users").where("UUID", uuid).update({
-      // username: body.username,
+      // email: body.email,
       // password: hash,
       firstname: body?.firstname,
       lastname: body?.lastname,
       qr_code: body?.qr_code,
       fingerprint: body?.fingerprint,
       // region: body.region,
-      // role: body.role,
+      // access_level: body.access_level,
       // refresh_token: body.refresh_token,
       // status: body.status,
     });
   }
   async updateUserAccount(uuid, body, hash) {
     return await this.db("users").where("UUID", uuid).update({
-      // username: body.username,
+      // email: body.email,
       password: hash,
       // firstname: body.firstname,
       // lastname: body.lastname,
       // region: body.region,
-      // role: body.role,
+      // access_level: body.access_level,
       // refresh_token: body.refresh_token,
       // status: body.status,
     });
@@ -64,12 +64,12 @@ class UserStore {
 
   async updateRefreshToken(uuid, body, refreshtoken) {
     return await this.db("users").where("UUID", uuid).update({
-      username: body.username,
+      email: body.email,
       password: body.password,
       firstname: body.firstname,
       lastname: body.lastname,
       // region: body.region,
-      role: body.role,
+      access_level: body.access_level,
       refresh_token: refreshtoken,
       status: body.status,
     });

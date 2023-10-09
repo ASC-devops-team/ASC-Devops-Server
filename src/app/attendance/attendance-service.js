@@ -13,11 +13,11 @@ class AttendaceService {
       const userRole = req.query.userRole;
 
       const checkTimes = [
-        { role: "user", start: 7 },
-        { role: "superadmin", start: 8 },
+        { access_level: "User", start: 7 },
+        { access_level: "Superadmin", start: 8 },
       ];
 
-      const roleInfo = checkTimes.find((info) => info.role === userRole);
+      const roleInfo = checkTimes.find((info) => info.access_level === userRole);
 
       if (!roleInfo) {
         throw new Error("Invalid userRole");
@@ -58,8 +58,8 @@ class AttendaceService {
       const currentTime = current.getTime(); // Get current time in milliseconds
 
       const checkTimes = [
-        { role: "user", start: 16, end: 17 },
-        { role: "superadmin", start: 17, end: 18 },
+        { access_level: "User", start: 16, end: 17 },
+        { access_level: "Superadmin", start: 17, end: 18 },
       ];
       // Calculate total work hours excluding lunch break
       const lunchStart = buildTime(12);
@@ -237,7 +237,7 @@ function calculateStatusAndTimes(
   let overtime = null;
   const hour = parseInt(totalWorkHours.split(":")[0]);
   for (const checkTime of checkTimes) {
-    if (userRole === checkTime.role) {
+    if (userRole === checkTime.access_level) {
       if (hour < 8) {
         if (currentTime < buildTime(checkTime.start) && status === "Present") {
           status = "Undertime";
