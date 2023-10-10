@@ -1,4 +1,3 @@
-const { query } = require("express");
 const moment = require("moment-timezone");
 const TableConfig = require("../../configuration/attendanceConfig");
 

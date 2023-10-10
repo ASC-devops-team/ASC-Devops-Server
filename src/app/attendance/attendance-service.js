@@ -14,10 +14,12 @@ class AttendaceService {
 
       const checkTimes = [
         { access_level: "User", start: 7 },
-        { access_level: "Superadmin", start: 8 },
+        { access_level: "Super Admin", start: 8 },
       ];
 
-      const roleInfo = checkTimes.find((info) => info.access_level === userRole);
+      const roleInfo = checkTimes.find(
+        (info) => info.access_level === userRole
+      );
 
       if (!roleInfo) {
         throw new Error("Invalid userRole");
@@ -59,7 +61,7 @@ class AttendaceService {
 
       const checkTimes = [
         { access_level: "User", start: 16, end: 17 },
-        { access_level: "Superadmin", start: 17, end: 18 },
+        { access_level: "Super Admin", start: 17, end: 18 },
       ];
       // Calculate total work hours excluding lunch break
       const lunchStart = buildTime(12);
@@ -103,10 +105,10 @@ class AttendaceService {
 
   // READS
   async getData(req, res, next) {
-    let result = [];
     try {
       const store = new Store(req.db);
       const { startDate, endDate } = req.query;
+      let result = [];
       result = await store.getData(startDate, endDate);
       return res.status(200).send({
         success: true,
@@ -266,7 +268,7 @@ function calculateStatusAndTimes(
           status = "Late & Overtime";
           overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
         }
-      } 
+      }
       break; // Exit the loop after finding the applicable role
     }
   }

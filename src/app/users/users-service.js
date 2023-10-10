@@ -360,9 +360,7 @@ class UserService {
       const qrCode = req.query.qr_code;
       const result = await store.getUserByQR(qrCode);
       if (!result) {
-        throw new NotFoundError(
-          "Resource not found, QR code not registered."
-        );
+        throw new NotFoundError("Resource not found, QR code not registered.");
       }
       return res.status(200).send({
         success: true,
@@ -387,18 +385,11 @@ class UserService {
   async getData(req, res, next) {
     try {
       const store = new Store(req.db);
-      const search = req.query.search;
-      let users = [];
-      const hasData = await store.getAll();
-      if (hasData.length > 0) {
-        users = await store.search(search);
-      } else {
-        users = await store.getAll();
-      }
-
+      let result = [];
+      result = await store.getData();
       return res.status(200).send({
         success: true,
-        data: users,
+        data: result,
       });
     } catch (err) {
       next(err);

@@ -1,3 +1,4 @@
+const moment = require("moment-timezone");
 const TableConfig = require("../../configuration/userTableConfig");
 
 class UserStore {
@@ -76,12 +77,26 @@ class UserStore {
   }
 
   async getUserByQR(qrCode) {
-    const result =  await this.db(this.table).select().where(this.cols.qrCode, qrCode).first();
+    const result = await this.db(this.table)
+      .select()
+      .where(this.cols.qrCode, qrCode)
+      .first();
     return result;
   }
 
-  async getAll() {
-    return await this.db("users").select();
+  // READS
+  async getData() {
+    try {
+      let query = this.db(this.table).select().orderBy("firstname", "asc");
+      const results = await query;
+      const convertedResults = convertDatesToTimezone(
+        results.map((row) => row),
+        [this.cols.dateHired, this.cols.birthday]
+      );
+      return convertedResults;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async search(search) {
@@ -107,6 +122,20 @@ class UserStore {
   //     .where('UUID', uuid)
   //     .del();
   // }
+}
+
+function convertDatesToTimezone(rows, dateFields) {
+  return rows.map((row) => {
+    const convertedFields = {};
+    dateFields.forEach((field) => {
+      const convertedDate = moment
+        .utc(row[field])
+        .tz("Asia/Singapore")
+        .format("YYYY-MM-DD");
+      convertedFields[field] = convertedDate;
+    });
+    return { ...row, ...convertedFields };
+  });
 }
 
 module.exports = UserStore;
