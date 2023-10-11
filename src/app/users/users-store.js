@@ -38,17 +38,17 @@ class UserStore {
 
   async updateUserPersonal(uuid, body, hash) {
     return await this.db("users").where("UUID", uuid).update({
-      // email: body.email,
-      // password: hash,
       firstname: body?.firstname,
       lastname: body?.lastname,
+      access_level: body?.access_level,
+      email: body?.email,
+      position: body?.position,
+      date_hired: body?.date_hired,
       qr_code: body?.qr_code,
       fingerprint: body?.fingerprint,
       avatar: body?.avatar,
-      // region: body.region,
-      // access_level: body.access_level,
+      status: body?.status,
       // refresh_token: body.refresh_token,
-      // status: body.status,
     });
   }
   async updateUserAccount(uuid, body, hash) {
