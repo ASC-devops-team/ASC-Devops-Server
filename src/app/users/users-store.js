@@ -88,7 +88,12 @@ class UserStore {
   // READS
   async getData() {
     try {
-      let query = this.db(this.table).select().orderBy("firstname", "asc");
+      let query = this.db(this.table)
+        .select()
+        .orderBy([
+          { column: "status", order: "desc" },
+          { column: "firstname" },
+        ]);
       const results = await query;
       const convertedResults = convertDatesToTimezone(
         results.map((row) => row),
