@@ -44,6 +44,7 @@ class UserStore {
       lastname: body?.lastname,
       qr_code: body?.qr_code,
       fingerprint: body?.fingerprint,
+      avatar: body?.avatar,
       // region: body.region,
       // access_level: body.access_level,
       // refresh_token: body.refresh_token,

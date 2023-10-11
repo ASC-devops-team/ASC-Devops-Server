@@ -40,6 +40,7 @@ const userDao =
             table.string("emergency_contact_number").nullable();
             table.string("qr_code").nullable();
             table.string("fingerprint").nullable();
+            table.string("avatar").notNullable().defaultTo("default");
             table.integer("status").notNullable().defaultTo(1);
             table.string("refresh_token").nullable();
             table.timestamps(true, true);
