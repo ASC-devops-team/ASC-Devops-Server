@@ -14,11 +14,11 @@ class UserStore {
 
   async registerUser(body, hash) {
     return await this.db("users").insert({
-      email: body.email,
-      password: hash,
       firstname: body.firstname,
       lastname: body.lastname,
-      // region: body.region,
+      position: body.position,
+      email: body.email,
+      password: hash,
       access_level: body.access_level,
     });
   }
