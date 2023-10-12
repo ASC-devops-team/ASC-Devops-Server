@@ -39,11 +39,24 @@ class UserStore {
   async updateUserPersonal(uuid, body, hash) {
     return await this.db("users").where("UUID", uuid).update({
       firstname: body?.firstname,
+      middlename: body?.middlename,
       lastname: body?.lastname,
+      suffix: body?.suffix,
+      maidenname: body?.maidenname,
       access_level: body?.access_level,
       email: body?.email,
       position: body?.position,
       date_hired: body?.date_hired,
+      birthday: body?.birthday,
+      civil_status: body?.civil_status,
+      contact_number: body?.contact_number,
+      address: body?.address,
+      sss: body?.sss,
+      tin: body?.tin,
+      hdmf: body?.hdmf,
+      philhealth: body?.philhealth,
+      emergency_contact_person: body?.emergency_contact_person,
+      emergency_contact_number: body?.emergency_contact_number,
       qr_code: body?.qr_code,
       fingerprint: body?.fingerprint,
       avatar: body?.avatar,
@@ -134,11 +147,13 @@ function convertDatesToTimezone(rows, dateFields) {
   return rows.map((row) => {
     const convertedFields = {};
     dateFields.forEach((field) => {
-      const convertedDate = moment
-        .utc(row[field])
-        .tz("Asia/Singapore")
-        .format("YYYY-MM-DD");
-      convertedFields[field] = convertedDate;
+      if (row[field]) {
+        const convertedDate = moment(row[field]).format("YYYY-MM-DD");
+        convertedFields[field] = convertedDate;
+      } else {
+        // If the field is null or undefined, keep it as-is
+        convertedFields[field] = row[field];
+      }
     });
     return { ...row, ...convertedFields };
   });
