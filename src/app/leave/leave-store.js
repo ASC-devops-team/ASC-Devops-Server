@@ -1,7 +1,7 @@
 const moment = require("moment-timezone");
-const TableConfig = require("../../configuration/attendanceConfig");
+const TableConfig = require("../../configuration/leaveConfig");
 
-class AttendanceStore {
+class LeaveStore {
   constructor(db) {
     this.db = db;
     this.table = TableConfig.tableName;
@@ -9,43 +9,27 @@ class AttendanceStore {
   }
 
   // CREATE
-  async add(body) {
+  async add(userId, body) {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this.db(this.table).insert({
-          date: body.date,
           name: body.name,
-          setting: body.setting,
-          clock_in: body.clock_in,
-          clock_out: body.clock_out,
-          late: body.late,
-          undertime: body.undertime,
-          overtime: body.overtime,
+          type: body.type,
+          date_from: body.date_from,
+          date_to: body.date_to,
+          duration: body.duration,
+          vacation_count: body.vacation_count,
+          sick_count: body.sick_count,
+          reason: body?.reason,
+          leave_form: body?.leave_form,
           status: body.status,
-          user_id: body.user_id,
+          user_id: userId,
         });
         resolve(result);
       } catch (error) {
         reject(error);
       }
     });
-  }
-
-  // GET Leave Balance
-  async getLeaveCountByUserId(userId, leaveType) {
-    try {
-      const currentYear = new Date().getFullYear(); // Get the year from the current date
-      const result = await this.db(this.table)
-        .count()
-        .where(this.cols.userid, userId)
-        .andWhere(this.cols.status, leaveType)
-        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
-      // You can replace this.cols.date with the actual column name for the date
-      const leaveCount = result[0]["count(*)"] || 0;
-      return leaveCount;
-    } catch (error) {
-      throw error; // Instead of using reject, you can throw the error for cleaner async/await handling
-    }
   }
 
   // GET EXISTING
@@ -149,4 +133,4 @@ function convertDatesToTimezone(rows, dateFields) {
   });
 }
 
-module.exports = AttendanceStore;
+module.exports = LeaveStore;

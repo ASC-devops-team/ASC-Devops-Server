@@ -81,19 +81,14 @@ const userDao =
             table.integer("vacation_count").notNullable();
             table.integer("sick_count").notNullable();
             table.string("reason").notNullable();
+            table.binary("leave_form").nullable();
+            table.string("status").nullable();
             table
               .integer("user_id")
               .unsigned()
               .nullable()
               .references("uuid")
               .inTable("users")
-              .onDelete("CASCADE");
-            table
-              .integer("attendance_id")
-              .unsigned()
-              .notNullable()
-              .references("uuid")
-              .inTable("attendance")
               .onDelete("CASCADE");
             table.index("name");
           })

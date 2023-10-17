@@ -8,5 +8,6 @@ router.use(require("./download/_rest"));
 router.use(require("./logs/_rest"));
 
 router.use(require("./attendance/_rest"));
+router.use(require("./leave/_rest"));
 
 module.exports = router;
