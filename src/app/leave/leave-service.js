@@ -12,11 +12,10 @@ class LeaveService {
       const body = req.body;
       const userId = req.query.userId;
       const file = req.file;
-      const fileContents = file.buffer;
       if (!file) {
         body.leave_form = null;
       } else {
-        body.leave_form = fileContents;
+        body.leave_form = file.buffer;
       }
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
