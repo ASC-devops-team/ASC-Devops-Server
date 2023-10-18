@@ -10,62 +10,61 @@ class AttendanceStore {
 
   // CREATE
   async add(body) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this.db(this.table).insert({
-          date: body.date,
-          name: body.name,
-          setting: body.setting,
-          clock_in: body.clock_in,
-          clock_out: body.clock_out,
-          late: body.late,
-          undertime: body.undertime,
-          overtime: body.overtime,
-          status: body.status,
-          user_id: body.user_id,
-        });
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  // GET Leave Balance
-  async getLeaveCountByUserId(userId, leaveType) {
     try {
-      const currentYear = new Date().getFullYear(); // Get the year from the current date
-      const result = await this.db(this.table)
-        .count()
-        .where(this.cols.userid, userId)
-        .andWhere(this.cols.status, leaveType)
-        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
-      // You can replace this.cols.date with the actual column name for the date
-      const leaveCount = result[0]["count(*)"] || 0;
-      return leaveCount;
+      const result = await this.db(this.table).insert({
+        date: body.date,
+        name: body.name,
+        setting: body.setting,
+        clock_in: body.clock_in,
+        clock_out: body.clock_out,
+        late: body.late,
+        undertime: body.undertime,
+        overtime: body.overtime,
+        status: body.status,
+        user_id: body.user_id,
+      });
+      return result;
     } catch (error) {
-      throw error; // Instead of using reject, you can throw the error for cleaner async/await handling
+      throw error;
     }
   }
 
   // GET EXISTING
   async getByUerIdAndDate(userId, date) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this.db(this.table)
-          .select()
-          .where(this.cols.userid, userId)
-          .andWhere(this.cols.date, date)
-          .first();
-        if (result) {
-          resolve(result);
-        } else {
-          resolve(null);
-        }
-      } catch (error) {
-        reject(error);
+    try {
+      const result = await this.db(this.table)
+        .select()
+        .where(this.cols.userid, userId)
+        .andWhere(this.cols.date, date)
+        .first();
+      if (result) {
+        return result;
+      } else {
+        return null;
       }
-    });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // UPDATE (Clock Out)
+  async update(body) {
+    try {
+      await this.db(this.table).where(this.cols.id, body.uuid).update({
+        clock_out: body.clock_out,
+        undertime: body.undertime,
+        overtime: body.overtime,
+        status: body.status,
+        total_work_hours: body.work_hours,
+      });
+      const updatedRows = await this.db(this.table)
+        .where(this.cols.id, body.uuid)
+        .select("*")
+        .first();
+      return updatedRows;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // READS
@@ -92,39 +91,39 @@ class AttendanceStore {
     }
   }
 
-  // UPDATE
-  async update(body) {
-    await this.db(this.table).where(this.cols.id, body.uuid).update({
-      clock_out: body.clock_out,
-      undertime: body.undertime,
-      overtime: body.overtime,
-      status: body.status,
-      total_work_hours: body.work_hours,
-    });
-    const updatedRows = await this.db(this.table)
-      .where(this.cols.id, body.uuid)
-      .select("*")
-      .first();
-    return updatedRows;
+  // GET Leave Balance
+  async getLeaveCountByUserId(userId, leaveType) {
+    try {
+      const currentYear = new Date().getFullYear(); // Get the year from the current date
+      const result = await this.db(this.table)
+        .count()
+        .where(this.cols.userid, userId)
+        .andWhere(this.cols.status, leaveType)
+        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
+      const leaveCount = result[0]["count(*)"] || 0;
+      return leaveCount;
+    } catch (error) {
+      throw error; // Instead of using reject, you can throw the error for cleaner async/await handling
+    }
   }
 
   // READ
-  async getById(uuid) {
-    const results = await this.db(this.table)
-      .select()
-      .where(this.cols.id, uuid);
-    return results;
-  }
+  // async getById(uuid) {
+  //   const results = await this.db(this.table)
+  //     .select()
+  //     .where(this.cols.id, uuid);
+  //   return results;
+  // }
 
   // DELETE
-  async delete(uuid) {
-    const deletedRows = await this.db(this.table)
-      .where(this.cols.id, uuid)
-      .select("*")
-      .first();
-    await this.db(this.table).where(this.cols.id, uuid).del();
-    return deletedRows;
-  }
+  // async delete(uuid) {
+  //   const deletedRows = await this.db(this.table)
+  //     .where(this.cols.id, uuid)
+  //     .select("*")
+  //     .first();
+  //   await this.db(this.table).where(this.cols.id, uuid).del();
+  //   return deletedRows;
+  // }
 }
 
 function formatDate(dateString) {

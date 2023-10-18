@@ -12,19 +12,19 @@ const router = express.Router();
 // CREATE
 router.post("/leave", db, uploadFile, asyncHandler(service.add));
 
-// READS
-router.get("/leave/get", db, asyncHandler(service.getData));
+// // READS
+// router.get("/leave/get", db, asyncHandler(service.getData));
 
-// GET EXISTING
-router.get("/leave/get/existing", db, asyncHandler(service.getByUerIdAndDate));
+// // GET EXISTING
+// router.get("/leave/get/existing", db, asyncHandler(service.getByUerIdAndDate));
 
-// UPDATE
-router.put("/leave/update", db, asyncHandler(service.update));
+// // UPDATE
+// router.put("/leave/update", db, asyncHandler(service.update));
 
-// READ
-router.get("/leave/get/:uuid", auth, db, asyncHandler(service.get));
+// // READ
+// router.get("/leave/get/:uuid", auth, db, asyncHandler(service.get));
 
-// DELETE
-router.delete("/leave/delete/:uuid", db, asyncHandler(service.delete));
+// // DELETE
+// router.delete("/leave/delete/:uuid", db, asyncHandler(service.delete));
 
 module.exports = router;

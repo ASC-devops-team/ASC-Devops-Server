@@ -10,105 +10,103 @@ class LeaveStore {
 
   // CREATE
   async add(userId, body) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this.db(this.table).insert({
-          name: body.name,
-          type: body.type,
-          date_from: body.date_from,
-          date_to: body.date_to,
-          duration: body.duration,
-          vacation_count: body.vacation_count,
-          sick_count: body.sick_count,
-          reason: body?.reason,
-          leave_form: body?.leave_form,
-          status: body.status,
-          user_id: userId,
-        });
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  // GET EXISTING
-  async getByUerIdAndDate(userId, date) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this.db(this.table)
-          .select()
-          .where(this.cols.userid, userId)
-          .andWhere(this.cols.date, date)
-          .first();
-        if (result) {
-          resolve(result);
-        } else {
-          resolve(null);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  // READS
-  async getData(startDate, endDate) {
     try {
-      let query = this.db(this.table).select().orderBy("date", "desc");
-      if (startDate && endDate) {
-        query = query.whereBetween("date", [startDate, endDate]);
-      }
-      const results = await query;
-      // Filter out data with dates beyond the current date
-      const currentDate = new Date();
-      const filteredResults = results.filter((row) => {
-        const rowDate = new Date(row.date);
-        return rowDate <= currentDate;
+      const result = await this.db(this.table).insert({
+        name: body.name,
+        type: body.type,
+        date_from: body.date_from,
+        date_to: body.date_to,
+        duration: body.duration,
+        vacation_count: body.vacation_count,
+        sick_count: body.sick_count,
+        reason: body?.reason,
+        leave_form: body?.leave_form,
+        status: body.status,
+        user_id: userId,
       });
-      const convertedResults = convertDatesToTimezone(
-        filteredResults.map((row) => row),
-        [this.cols.date]
-      );
-      return convertedResults;
+      return result;
     } catch (error) {
       throw error;
     }
   }
 
-  // UPDATE
-  async update(body) {
-    await this.db(this.table).where(this.cols.id, body.uuid).update({
-      clock_out: body.clock_out,
-      undertime: body.undertime,
-      overtime: body.overtime,
-      status: body.status,
-      total_work_hours: body.work_hours,
-    });
-    const updatedRows = await this.db(this.table)
-      .where(this.cols.id, body.uuid)
-      .select("*")
-      .first();
-    return updatedRows;
-  }
+  // // GET EXISTING
+  // async getByUerIdAndDate(userId, date) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       const result = await this.db(this.table)
+  //         .select()
+  //         .where(this.cols.userid, userId)
+  //         .andWhere(this.cols.date, date)
+  //         .first();
+  //       if (result) {
+  //         resolve(result);
+  //       } else {
+  //         resolve(null);
+  //       }
+  //     } catch (error) {
+  //       reject(error);
+  //     }
+  //   });
+  // }
 
-  // READ
-  async getById(uuid) {
-    const results = await this.db(this.table)
-      .select()
-      .where(this.cols.id, uuid);
-    return results;
-  }
+  // // READS
+  // async getData(startDate, endDate) {
+  //   try {
+  //     let query = this.db(this.table).select().orderBy("date", "desc");
+  //     if (startDate && endDate) {
+  //       query = query.whereBetween("date", [startDate, endDate]);
+  //     }
+  //     const results = await query;
+  //     // Filter out data with dates beyond the current date
+  //     const currentDate = new Date();
+  //     const filteredResults = results.filter((row) => {
+  //       const rowDate = new Date(row.date);
+  //       return rowDate <= currentDate;
+  //     });
+  //     const convertedResults = convertDatesToTimezone(
+  //       filteredResults.map((row) => row),
+  //       [this.cols.date]
+  //     );
+  //     return convertedResults;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
-  // DELETE
-  async delete(uuid) {
-    const deletedRows = await this.db(this.table)
-      .where(this.cols.id, uuid)
-      .select("*")
-      .first();
-    await this.db(this.table).where(this.cols.id, uuid).del();
-    return deletedRows;
-  }
+  // // UPDATE
+  // async update(body) {
+  //   await this.db(this.table).where(this.cols.id, body.uuid).update({
+  //     clock_out: body.clock_out,
+  //     undertime: body.undertime,
+  //     overtime: body.overtime,
+  //     status: body.status,
+  //     total_work_hours: body.work_hours,
+  //   });
+  //   const updatedRows = await this.db(this.table)
+  //     .where(this.cols.id, body.uuid)
+  //     .select("*")
+  //     .first();
+  //   return updatedRows;
+  // }
+
+  // // READ
+  // async getById(uuid) {
+  //   const results = await this.db(this.table)
+  //     .select()
+  //     .where(this.cols.id, uuid);
+  //   return results;
+  // }
+
+  // // DELETE
+  // async delete(uuid) {
+  //   const deletedRows = await this.db(this.table)
+  //     .where(this.cols.id, uuid)
+  //     .select("*")
+  //     .first();
+  //   await this.db(this.table).where(this.cols.id, uuid).del();
+  //   return deletedRows;
+  // }
 }
 
 function formatDate(dateString) {

@@ -11,9 +11,6 @@ const router = express.Router();
 // CREATE
 router.post("/attendance", db, asyncHandler(service.add));
 
-// READS
-router.get("/attendance/get", db, asyncHandler(service.getData));
-
 // GET EXISTING
 router.get(
   "/attendance/get/existing",
@@ -24,10 +21,13 @@ router.get(
 // UPDATE
 router.put("/attendance/update", db, asyncHandler(service.update));
 
-// READ
-router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
+// READS
+router.get("/attendance/get", db, asyncHandler(service.getData));
 
-// DELETE
-router.delete("/attendance/delete/:uuid", db, asyncHandler(service.delete));
+// // READ
+// router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
+
+// // DELETE
+// router.delete("/attendance/delete/:uuid", db, asyncHandler(service.delete));
 
 module.exports = router;
