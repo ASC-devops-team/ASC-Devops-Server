@@ -13,18 +13,18 @@ class BadRequestError extends Error {
   }
 }
 
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
 // Custom error classes
 class FileUploadError extends Error {
   constructor(message) {
     super(message);
     this.name = "FileUploadError";
-  }
-}
-
-class AuthenticationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "AuthenticationError";
   }
 }
 
@@ -47,6 +47,22 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  if (err instanceof UnauthorizedError) {
+    return res.status(401).json({
+      success: false,
+      error: err.name,
+      message: err.message,
+    });
+  }
+
+  if (err instanceof FileUploadError) {
+    return res.status(400).json({
+      success: false,
+      error: err.name,
+      message: err.message,
+    });
+  }
+
   // Handle generic errors
   console.error(err); // Log the error for debugging purposes
   return res.status(500).json({
@@ -60,6 +76,6 @@ module.exports = {
   NotFoundError,
   BadRequestError,
   FileUploadError,
+  UnauthorizedError,
   errorHandler,
-  AuthenticationError,
 };

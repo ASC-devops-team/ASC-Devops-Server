@@ -7,7 +7,7 @@ require("dotenv").config();
 const {
   NotFoundError,
   BadRequestError,
-  AuthenticationError,
+  UnauthorizedError,
 } = require("../../middlewares/errors");
 const moduleName = "Authentication";
 
@@ -32,7 +32,7 @@ class UserService {
       }
       const validPassword = await bcrypt.compare(body.password, user.password);
       if (!validPassword) {
-        throw new AuthenticationError("Invalid login credentials");
+        throw new UnauthorizedError("Invalid password");
       }
       // Create a JWT token
       const accessToken = jwt.sign(
@@ -74,25 +74,148 @@ class UserService {
           maxAge: 30 * 1000,
         })
         .send({
-          valid: true,
+          success: true,
           message: "Login successful",
           data: { ...updatedUser, accessToken },
         });
     } catch (err) {
       next(err);
-      if (err instanceof AuthenticationError) {
-        return res
-          .status(401)
-          .send({ success: false, error: "Invalid login credentials" });
-      } else if (err instanceof NotFoundError) {
-        return res
-          .status(404)
-          .send({ success: false, error: "Email not found" });
-      } else {
-        return res
-          .status(500)
-          .send({ success: false, error: "Internal Server Error" });
+    }
+  }
+
+  // Register new user
+  async register(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const logs = new Logs(req.db);
+      const body = req.body;
+      //const userId = req.auth.id; // Get user ID using auth
+      // Hash the password
+      const hash = await bcrypt.hash(body.password, 10);
+      // Validate input
+      if (!body.email || !body.password) {
+        throw new BadRequestError("Email and password are required");
       }
+      // Check if the user already exists
+      const hasUser = await store.getUsername(body.email);
+      if (hasUser) {
+        throw new BadRequestError("Email already exists");
+      }
+      // Insert the new user into the database
+      const result = await store.registerUser(body, hash);
+      const uuid = result[0];
+      // Create a new object without the "password" property
+      const userData = { ...body };
+      delete userData.password;
+      logs.add({
+        uuid: userId,
+        module: moduleName,
+        data: userData,
+        action: "registered an account",
+        ...body,
+      });
+      return res.status(201).send({
+        success: true,
+        message: "Registration Complete",
+        data: {
+          uuid: uuid,
+          ...userData,
+          password: hash,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // password verification by user uuid
+  async password(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const body = req.body;
+      const result = await store.getUserByUUID(body.uuid);
+      if (!result) {
+        throw new NotFoundError("User not found");
+      }
+      const validPassword = await bcrypt.compare(
+        body.password,
+        result.password
+      );
+      if (!validPassword) {
+        throw new BadRequestError("Invalid password, please try again");
+      }
+      res.status(200).send({ success: true, message: "Successfully Updated" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Get all users
+  async getData(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      let result = [];
+      result = await store.getData();
+      return res.status(200).send({
+        success: true,
+        message: "Data retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Get user by QR CODE
+  async userByQR(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const qrCode = req.query.qr_code;
+      const result = await store.getUserByQR(qrCode);
+      if (!result) {
+        throw new NotFoundError("Resource not found, QR code not registered.");
+      }
+      return res.status(200).send({
+        success: true,
+        message: "Data retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Update user
+  async updateUser(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const logs = new Logs(req.db);
+      const uuid = req.params.uuid;
+      const body = req.body;
+      // Hash the password
+      if (body.password) {
+        body.password = await bcrypt.hash(body.password, 10);
+      }
+      const result = store.updateUser(uuid, body);
+      if (result === 0) {
+        throw new NotFoundError("User not found");
+      }
+      const userData = { ...body };
+      delete userData.password;
+      logs.add({
+        uuid: userId,
+        module: moduleName,
+        data: userData,
+        action: "updated an account",
+        ...body,
+      });
+      return res.status(200).send({
+        success: true,
+        message: "Successfully Updated",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
     }
   }
 
@@ -165,232 +288,6 @@ class UserService {
           return res.json({ accessToken });
         }
       );
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  async password(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const body = req.body;
-      const result = await store.getUserByUUID(body.uuid);
-      if (!result) {
-        throw new NotFoundError("User not found");
-      }
-      const validPassword = await bcrypt.compare(
-        result.password,
-        body.password
-      );
-      if (!validPassword) {
-        throw new BadRequestError("Invalid password please try again");
-      }
-
-      return res.status(200).send({
-        success: true,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  // Register new user
-  async register(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const logs = new Logs(req.db);
-      const body = req.body;
-      //const userId = req.auth.id; // Get user ID using auth
-      // Hash the password
-      const hash = await bcrypt.hash(body.password, 10);
-      // Validate input
-      if (!body.email || !body.password) {
-        throw new BadRequestError("Email and password are required");
-      }
-      // Check if the user already exists
-      const hasUser = await store.getUsername(body.email);
-      if (hasUser) {
-        throw new BadRequestError("Email already exists");
-      }
-      // Insert the new user into the database
-      const result = await store.registerUser(body, hash);
-      const uuid = result[0];
-      // Create a new object without the "password" property
-      const userData = { ...body };
-      delete userData.password;
-      logs.add({
-        uuid: userId,
-        module: moduleName,
-        data: userData,
-        action: "registered an account",
-        ...body,
-      });
-      return res.status(201).send({
-        success: true,
-        message: "Registration Complete",
-        data: {
-          uuid: uuid,
-          ...userData,
-          password: hash,
-        },
-      });
-    } catch (err) {
-      next(err);
-      if (err instanceof BadRequestError) {
-        return res.status(400).send({ success: false, error: err.message });
-      } else {
-        // Handle other errors with a generic error response
-        return res
-          .status(500)
-          .send({ success: false, error: "Internal Server Error" });
-      }
-    }
-  }
-
-  // Update user
-  async updateUser(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const logs = new Logs(req.db);
-      const uuid = req.params.uuid;
-      const body = req.body;
-      //const userId = req.auth.id; // Get user ID using auth
-      // Hash the password
-      // const hash = await bcrypt.hash(body.password, 10);
-      const result = store.updateUser(uuid, body);
-      if (result === 0) {
-        throw new NotFoundError("User not found");
-      }
-      const userData = { ...body };
-      delete userData.password;
-      logs.add({
-        uuid: userId,
-        module: moduleName,
-        data: userData,
-        action: "updated an account",
-        ...body,
-      });
-      return res.status(200).send({
-        success: true,
-        data: {
-          uuid,
-          ...userData,
-        },
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  // Update user personal info
-  async updatePersonal(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const logs = new Logs(req.db);
-      const uuid = req.params.uuid;
-      const body = req.body;
-      //const userId = req.auth.id; // Get user ID using auth
-      // Hash the password
-      // const hash = await bcrypt.hash(body.password, 10);
-      const result = store.updateUserPersonal(uuid, body);
-      if (result === 0) {
-        throw new NotFoundError("User not found");
-      }
-      const userData = { ...body };
-      delete userData.password;
-      logs.add({
-        uuid: userId,
-        module: moduleName,
-        data: userData,
-        action: "updated an account",
-        ...body,
-      });
-      return res.status(200).send({
-        success: true,
-        data: {
-          uuid,
-          ...userData,
-        },
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  // update user account information
-  async updateAccount(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const logs = new Logs(req.db);
-      const uuid = req.params.uuid;
-      const body = req.body;
-      //const userId = req.auth.id; // Get user ID using auth
-      // Hash the password
-      const hash = await bcrypt.hash(body.password, 10);
-      const result = store.updateUserAccount(uuid, body, hash);
-      if (result === 0) {
-        throw new NotFoundError("User not found");
-      }
-      const userData = { ...body };
-      delete userData.password;
-      logs.add({
-        uuid: userId,
-        module: moduleName,
-        data: userData,
-        action: "updadted an account",
-        ...body,
-      });
-      return res.status(200).send({
-        success: true,
-        data: {
-          uuid,
-          ...userData,
-          password: hash,
-        },
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  // Get user by ID
-  async userByQR(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      const qrCode = req.query.qr_code;
-      const result = await store.getUserByQR(qrCode);
-      if (!result) {
-        throw new NotFoundError("Resource not found, QR code not registered.");
-      }
-      return res.status(200).send({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        return res.status(404).json({
-          success: false,
-          error: error.name,
-          message: error.message,
-        });
-      } else {
-        return res
-          .status(500)
-          .send({ success: false, error: "Internal Server Error" });
-      }
-    }
-  }
-
-  // Get all users
-  async getData(req, res, next) {
-    try {
-      const store = new Store(req.db);
-      let result = [];
-      result = await store.getData();
-      return res.status(200).send({
-        success: true,
-        data: result,
-      });
     } catch (err) {
       next(err);
     }
