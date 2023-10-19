@@ -12,8 +12,8 @@ const router = express.Router();
 // CREATE
 router.post("/leave", db, uploadFile, asyncHandler(service.add));
 
-// // READS
-// router.get("/leave/get", db, asyncHandler(service.getData));
+// READS
+router.get("/leave/get", db, asyncHandler(service.getData));
 
 // // GET EXISTING
 // router.get("/leave/get/existing", db, asyncHandler(service.getByUerIdAndDate));

@@ -13,6 +13,7 @@ class LeaveStore {
     try {
       const result = await this.db(this.table).insert({
         name: body.name,
+        date: body.date,
         type: body.type,
         date_from: body.date_from,
         date_to: body.date_to,
@@ -25,6 +26,30 @@ class LeaveStore {
         user_id: userId,
       });
       return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Get Table data
+  async getData(startDate, endDate) {
+    try {
+      let query = this.db(this.table).select().orderBy(this.cols.date, "desc");
+      if (startDate && endDate) {
+        query = query.whereBetween(this.cols.date, [startDate, endDate]);
+      }
+      const results = await query;
+      const convertedResults = convertDatesToTimezone(
+        results.map((row) => row),
+        [
+          this.cols.date,
+          this.cols.createdAt,
+          this.cols.updatedAt,
+          this.cols.dateFrom,
+          this.cols.dateTo,
+        ]
+      );
+      return convertedResults;
     } catch (error) {
       throw error;
     }
@@ -48,30 +73,6 @@ class LeaveStore {
   //       reject(error);
   //     }
   //   });
-  // }
-
-  // // READS
-  // async getData(startDate, endDate) {
-  //   try {
-  //     let query = this.db(this.table).select().orderBy("date", "desc");
-  //     if (startDate && endDate) {
-  //       query = query.whereBetween("date", [startDate, endDate]);
-  //     }
-  //     const results = await query;
-  //     // Filter out data with dates beyond the current date
-  //     const currentDate = new Date();
-  //     const filteredResults = results.filter((row) => {
-  //       const rowDate = new Date(row.date);
-  //       return rowDate <= currentDate;
-  //     });
-  //     const convertedResults = convertDatesToTimezone(
-  //       filteredResults.map((row) => row),
-  //       [this.cols.date]
-  //     );
-  //     return convertedResults;
-  //   } catch (error) {
-  //     throw error;
-  //   }
   // }
 
   // // UPDATE

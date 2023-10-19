@@ -72,6 +72,7 @@ const userDao =
 
           .createTable("leave", (table) => {
             table.increments("uuid").primary();
+            table.date("date").notNullable();
             table.string("name").notNullable();
             table.timestamps(true, true);
             table.string("type").notNullable();

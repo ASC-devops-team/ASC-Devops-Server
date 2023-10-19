@@ -4,9 +4,11 @@ const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
 class LeaveService {
+
   // Submit Leave
   async add(req, res, next) {
     try {
+      const current = new Date();
       const attendanceStore = new AttendanceStore(req.db);
       const store = new Store(req.db);
       const body = req.body;
@@ -23,7 +25,7 @@ class LeaveService {
       const leaveDuration = Math.ceil(
         (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
       );
-      if (body.type === "VL" || body.type === "SL") {
+      if (body.type === "VL" || body.type === "SL" || body.type === "EL") {
         const leaveCount = await attendanceStore.getLeaveCountByUserId(
           userId,
           body.type
@@ -33,6 +35,7 @@ class LeaveService {
             `Reached the maximum ${body.type} for this year`
           );
         }
+        body.date = current;
         body.duration = leaveDuration;
         body.vacation_count = body.type === "VL" ? leaveCount : 0;
         body.sick_count = body.type === "SL" ? leaveCount : 0;
@@ -42,6 +45,22 @@ class LeaveService {
       body.status = leaveStatus;
       const result = await store.add(userId, body);
       res.status(201).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Get Table Data 
+  async getData(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const { startDate, endDate } = req.query;
+      let result = [];
+      result = await store.getData(startDate, endDate);
+      return res.status(200).send({
         success: true,
         data: result,
       });
@@ -95,22 +114,6 @@ class LeaveService {
   //     if (result === 0) {
   //       throw new NotFoundError("Data Not Found");
   //     }
-  //     return res.status(200).send({
-  //       success: true,
-  //       data: result,
-  //     });
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // }
-
-  // // READS
-  // async getData(req, res, next) {
-  //   try {
-  //     const store = new Store(req.db);
-  //     const { startDate, endDate } = req.query;
-  //     let result = [];
-  //     result = await store.getData(startDate, endDate);
   //     return res.status(200).send({
   //       success: true,
   //       data: result,

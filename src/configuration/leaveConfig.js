@@ -3,6 +3,7 @@ module.exports = {
   columnNames: {
     id: "uuid",
     name: "name",
+    date: "date",
     type: "type",
     dateFrom: "date_from",
     dateTo: "date_to",
@@ -14,5 +15,7 @@ module.exports = {
     leaveForm: "leave_form",
     status: "status",
     userId: "user_id",
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   },
 };
