@@ -38,9 +38,9 @@ const userDao =
             table.string("philhealth").nullable();
             table.string("emergency_contact_person").nullable();
             table.string("emergency_contact_number").nullable();
+            table.string("avatar").notNullable().defaultTo("default");
             table.string("qr_code").nullable();
             table.string("fingerprint").nullable();
-            table.string("avatar").notNullable().defaultTo("default");
             table.integer("status").notNullable().defaultTo(1);
             table.string("refresh_token").nullable();
             table.timestamps(true, true);
@@ -49,8 +49,8 @@ const userDao =
 
           .createTable("attendance", (table) => {
             table.increments("uuid").primary();
-            table.date("date").notNullable();
             table.string("name").notNullable();
+            table.date("date").notNullable();
             table.string("setting").nullable();
             table.time("clock_in").nullable();
             table.time("clock_out").nullable();
@@ -62,7 +62,7 @@ const userDao =
             table
               .integer("user_id")
               .unsigned()
-              .nullable()
+              .notNullable()
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
@@ -72,9 +72,8 @@ const userDao =
 
           .createTable("leave", (table) => {
             table.increments("uuid").primary();
-            table.date("date").notNullable();
             table.string("name").notNullable();
-            table.timestamps(true, true);
+            table.date("date").notNullable();
             table.string("type").notNullable();
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
@@ -84,10 +83,12 @@ const userDao =
             table.string("reason").notNullable();
             table.binary("leave_form").nullable();
             table.string("status").nullable();
+            table.string("remarks").nullable();
+            table.timestamps(true, true);
             table
               .integer("user_id")
               .unsigned()
-              .nullable()
+              .notNullable()
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");

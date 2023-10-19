@@ -236,7 +236,7 @@ function getLeaveStatus(leaveFrom) {
   if (!leaveFrom) {
     return "Incomplete";
   } else {
-    return "Pending";
+    return "For Approval";
   }
 }
 
