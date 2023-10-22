@@ -96,6 +96,45 @@ const userDao =
             table.index("name");
           })
 
+          .createTable("equipment", (table) => {
+            table.increments("uuid").primary();
+            table.string("type").notNullable();
+            table.string("brand").notNullable();
+            table.string("model").notNullable();
+            table.string("serial_code").nullable();
+            table.date("purchase_date").nullable();
+            table.double("purchase_price").nullable();
+            table.double("current_value").nullable();
+            table.string("notes").nullable();
+            table.string("status").nullable();
+            table.timestamps(true, true);
+          })
+
+          .createTable("device", (table) => {
+            table.increments("uuid").primary();
+            table.string("name").notNullable(); // assigned to
+            table.string("type").notNullable();
+            table.string("brand").notNullable();
+            table.string("model").notNullable();
+            table.string("serial_code").nullable();
+            table.date("issued_date").nullable();
+            table.date("returned_date").nullable();
+            table.date("purchase_date").nullable();
+            table.double("purchase_price").nullable();
+            table.double("current_value").nullable();
+            table.string("notes").nullable();
+            table.string("status").nullable();
+            table.timestamps(true, true);
+            table
+              .integer("user_id")
+              .unsigned()
+              .notNullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
+            table.index("name");
+          })
+
           .createTable("logs", (table) => {
             table.increments("log_id").primary();
             table
