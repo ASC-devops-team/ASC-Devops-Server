@@ -18,8 +18,8 @@ router.get("/leave/get", db, asyncHandler(service.getData));
 // // GET EXISTING
 // router.get("/leave/get/existing", db, asyncHandler(service.getByUerIdAndDate));
 
-// // UPDATE
-// router.put("/leave/update", db, asyncHandler(service.update));
+// UPDATE
+router.put("/leave/:uuid", db, asyncHandler(service.update));
 
 // // READ
 // router.get("/leave/get/:uuid", auth, db, asyncHandler(service.get));

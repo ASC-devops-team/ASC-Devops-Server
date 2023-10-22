@@ -4,7 +4,6 @@ const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
 class LeaveService {
-
   // Submit Leave
   async add(req, res, next) {
     try {
@@ -37,8 +36,8 @@ class LeaveService {
         }
         body.date = current;
         body.duration = leaveDuration;
-        body.vacation_count = body.type === "VL" ? leaveCount : 0;
-        body.sick_count = body.type === "SL" ? leaveCount : 0;
+        body.vl_balance = body.type === "VL" ? leaveCount : 0;
+        body.sl_balance = body.type === "SL" ? leaveCount : 0;
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
@@ -53,7 +52,7 @@ class LeaveService {
     }
   }
 
-  // Get Table Data 
+  // Get Table Data
   async getData(req, res, next) {
     try {
       const store = new Store(req.db);
@@ -69,59 +68,33 @@ class LeaveService {
     }
   }
 
-  // // CLOCK OUT
-  // async update(req, res, next) {
-  //   try {
-  //     const store = new Store(req.db);
-  //     const body = req.body;
-  //     const userRole = req.query.userRole; // Assuming you have defined userRole
-
-  //     const current = new Date();
-  //     const currentTime = current.getTime(); // Get current time in milliseconds
-
-  //     const checkTimes = [
-  //       { access_level: "User", start: 16, end: 17 },
-  //       { access_level: "Super Admin", start: 17, end: 18 },
-  //     ];
-  //     // Calculate total work hours excluding lunch break
-  //     const lunchStart = buildTime(12);
-  //     const lunchEnd = buildTime(13);
-  //     const clockInTime = parseClockInDateTime(body.date, body.clock_in);
-
-  //     // Calculate total work hours based on clock_in and current time, excluding lunch break
-  //     const totalWorkHours = calculateTotalWorkHours(
-  //       clockInTime,
-  //       current,
-  //       lunchStart,
-  //       lunchEnd
-  //     );
-
-  //     let { status, undertime, overtime } = calculateStatusAndTimes(
-  //       userRole,
-  //       currentTime,
-  //       body.status,
-  //       checkTimes,
-  //       totalWorkHours
-  //     );
-
-  //     body.clock_out = current;
-  //     body.undertime = undertime;
-  //     body.overtime = overtime;
-  //     body.work_hours = totalWorkHours;
-  //     body.status = status;
-
-  //     const result = await store.update(body);
-  //     if (result === 0) {
-  //       throw new NotFoundError("Data Not Found");
-  //     }
-  //     return res.status(200).send({
-  //       success: true,
-  //       data: result,
-  //     });
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // }
+  // Update user
+  async update(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const uuid = req.params.uuid;
+      const body = req.body;
+      console.log(body);
+      // const file = req.file;
+      // delete body.leave_form;
+      // if (!file) {
+      //   body.leave_form = null;
+      // } else {
+      //   body.leave_form = file.buffer;
+      // }
+      const result = store.update(uuid, body);
+      if (result === 0) {
+        throw new NotFoundError("User not found");
+      }
+      return res.status(200).send({
+        success: true,
+        message: "Successfully Updated",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 
   // // GET EXISTING
   // async getByUerIdAndDate(req, res, next) {
@@ -234,9 +207,9 @@ function getTimeDifference(startTime, endTime) {
 
 function getLeaveStatus(leaveFrom) {
   if (!leaveFrom) {
-    return "Incomplete";
+    return "Awaiting Form";
   } else {
-    return "For Approval";
+    return "Pending";
   }
 }
 

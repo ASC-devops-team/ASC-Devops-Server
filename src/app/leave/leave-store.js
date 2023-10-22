@@ -18,11 +18,13 @@ class LeaveStore {
         date_from: body.date_from,
         date_to: body.date_to,
         duration: body.duration,
-        vacation_count: body.vacation_count,
-        sick_count: body.sick_count,
+        vl_balance: body.vl_balance,
+        sl_balance: body.sl_balance,
         reason: body?.reason,
         leave_form: body?.leave_form,
         status: body.status,
+        decision: body?.decision,
+        remarks: body?.remarks,
         user_id: userId,
       });
       return result;
@@ -75,21 +77,28 @@ class LeaveStore {
   //   });
   // }
 
-  // // UPDATE
-  // async update(body) {
-  //   await this.db(this.table).where(this.cols.id, body.uuid).update({
-  //     clock_out: body.clock_out,
-  //     undertime: body.undertime,
-  //     overtime: body.overtime,
-  //     status: body.status,
-  //     total_work_hours: body.work_hours,
-  //   });
-  //   const updatedRows = await this.db(this.table)
-  //     .where(this.cols.id, body.uuid)
-  //     .select("*")
-  //     .first();
-  //   return updatedRows;
-  // }
+  // UPDATE
+  async update(uuid, body) {
+    try {
+      return await this.db(this.table).where(this.cols.id, uuid).update({
+        name: body?.name,
+        date: body?.date,
+        type: body?.type,
+        date_from: body?.date_from,
+        date_to: body?.date_to,
+        duration: body?.duration,
+        vl_balance: body?.vl_balance,
+        sl_balance: body?.sl_balance,
+        reason: body?.reason,
+        leave_form: body?.leave_form,
+        status: body?.status,
+        decision: body?.decision,
+        remarks: body?.remarks,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // // READ
   // async getById(uuid) {

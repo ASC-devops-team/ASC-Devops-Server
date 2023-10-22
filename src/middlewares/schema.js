@@ -78,11 +78,12 @@ const userDao =
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
             table.integer("duration").notNullable();
-            table.integer("vacation_count").notNullable();
-            table.integer("sick_count").notNullable();
+            table.integer("vl_balance").notNullable();
+            table.integer("sl_balance").notNullable();
             table.string("reason").notNullable();
             table.binary("leave_form").nullable();
             table.string("status").nullable();
+            table.string("decision").nullable();
             table.string("remarks").nullable();
             table.timestamps(true, true);
             table
