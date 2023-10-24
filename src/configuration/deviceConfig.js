@@ -9,6 +9,7 @@ module.exports = {
     serialCode: "serial_code",
     issuedDate: "issued_date",
     returnedDate: "returned_date",
+    purchaseDate: "purchase_date",
     purchasePrice: "purchase_price",
     currentValue: "current_value",
     notes: "notes",
