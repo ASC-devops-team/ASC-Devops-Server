@@ -14,6 +14,9 @@ router.post("/device", db, asyncHandler(service.add));
 // READS
 router.get("/device/get", db, asyncHandler(service.getData));
 
+// UPDATE
+router.put("/device", db, asyncHandler(service.update));
+
 // // GET EXISTING
 // router.get(
 //   "/equipment/get/existing",

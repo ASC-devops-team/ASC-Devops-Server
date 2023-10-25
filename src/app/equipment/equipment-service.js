@@ -61,7 +61,7 @@ class EquipmentService {
       const body = req.body;
       const result = await store.update(body);
       if (result === 0) {
-        throw new NotFoundError("User not found");
+        throw new NotFoundError("Equipment not found");
       }
 
       return res.status(200).send({

@@ -70,21 +70,28 @@ class DeviceStore {
     }
   }
 
-  // UPDATE (Clock Out)
+  // UPDATE
   async update(body) {
     try {
-      await this.db(this.table).where(this.cols.id, body.uuid).update({
-        clock_out: body.clock_out,
-        undertime: body.undertime,
-        overtime: body.overtime,
-        status: body.status,
-        total_work_hours: body.work_hours,
-      });
-      const updatedRows = await this.db(this.table)
-        .where(this.cols.id, body.uuid)
-        .select("*")
-        .first();
-      return updatedRows;
+      const result = await this.db(this.table)
+        .update({
+          name: body?.name,
+          type: body?.type,
+          brand: body?.brand,
+          model: body?.model,
+          serial_code: body?.serial_code,
+          issued_date: body?.issued_date,
+          returned_date: body?.returned_date,
+          purchase_date: body?.purchase_date,
+          purchase_price: body?.purchase_price,
+          current_value: body?.current_value,
+          current_value: body?.current_value,
+          notes: body?.notes,
+          status: body?.status,
+          user_id: body?.user_id,
+        })
+        .where("uuid", body.uuid);
+      return result;
     } catch (error) {
       throw error;
     }
