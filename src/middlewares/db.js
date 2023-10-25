@@ -1,5 +1,5 @@
 const knex = require("knex");
-const passwordOptions = ["1234"]; // Define your password options
+const passwordOptions = ["1234", "@theHouseof25"]; // Define your password options
 let db = null; // Initialize the database connection variable
 
 async function connectToDatabase() {

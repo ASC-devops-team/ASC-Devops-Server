@@ -7,7 +7,6 @@ const {
 } = require("../../middlewares/errors");
 
 class EquipmentService {
-
   // CLOCK IN
   async add(req, res, next) {
     try {
@@ -55,48 +54,19 @@ class EquipmentService {
     }
   }
 
-  // CLOCK OUT
+  // UPDATE
   async update(req, res, next) {
     try {
       const store = new Store(req.db);
       const body = req.body;
-      const userRole = req.query.userRole;
-      const current = new Date();
-      const currentTime = current.getTime(); // Get current time in milliseconds
-      const checkTimes = [
-        { access_level: "User", start: 16, end: 17 },
-        { access_level: "Super Admin", start: 17, end: 18 },
-      ];
-      // Calculate total work hours excluding lunch break
-      const lunchStart = buildTime(12);
-      const lunchEnd = buildTime(13);
-      const clockInTime = parseClockInDateTime(body.date, body.clock_in);
-      // Calculate total work hours based on clock_in and current time, excluding lunch break
-      const totalWorkHours = calculateTotalWorkHours(
-        clockInTime,
-        current,
-        lunchStart,
-        lunchEnd
-      );
-      let { status, undertime, overtime } = calculateStatusAndTimes(
-        userRole,
-        currentTime,
-        body.status,
-        checkTimes,
-        totalWorkHours
-      );
-      body.clock_out = current;
-      body.undertime = undertime;
-      body.overtime = overtime;
-      body.work_hours = totalWorkHours;
-      body.status = status;
       const result = await store.update(body);
       if (result === 0) {
-        throw new NotFoundError("Data Not Found");
+        throw new NotFoundError("User not found");
       }
+
       return res.status(200).send({
         success: true,
-        data: result,
+        data: body,
       });
     } catch (err) {
       next(err);
