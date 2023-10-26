@@ -68,9 +68,12 @@ class AttendanceStore {
   }
 
   // READS
-  async getData(startDate, endDate) {
+  async getData(userId, startDate, endDate) {
     try {
       let query = this.db(this.table).select().orderBy("date", "desc");
+      if (userId) {
+        query = query.where("user_id", userId);
+      }
       if (startDate && endDate) {
         query = query.whereBetween("date", [startDate, endDate]);
       }
