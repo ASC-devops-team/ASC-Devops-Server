@@ -124,6 +124,25 @@ class AttendaceService {
     }
   }
 
+  // UPDATE ATTENDANCE DTR
+  async update(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const body = req.body;
+      const result = await store.update(body);
+      if (result === 0) {
+        throw new NotFoundError("User not found");
+      }
+
+      return res.status(200).send({
+        success: true,
+        data: body,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // READ
   // async get(req, res, next) {
   //   try {

@@ -110,6 +110,29 @@ class AttendanceStore {
     }
   }
 
+  // UPDATE ATTENDANCE DTR
+  async update(body) {
+    try {
+      const result = await this.db(this.table)
+        .update({
+          date: body.date,
+          name: body.name,
+          setting: body.setting,
+          clock_in: body.clock_in,
+          clock_out: body.clock_out,
+          late: body.late,
+          undertime: body.undertime,
+          overtime: body.overtime,
+          status: body.status,
+          user_id: body.user_id,
+        })
+        .where("uuid", body.uuid);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // READ
   // async getById(uuid) {
   //   const results = await this.db(this.table)

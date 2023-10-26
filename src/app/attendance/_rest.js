@@ -24,6 +24,9 @@ router.put("/attendance/update", db, asyncHandler(service.update));
 // READS
 router.get("/attendance/get", db, asyncHandler(service.getData));
 
+// UPDATE ATTENDANCE DTR
+router.put("/attendance", db, asyncHandler(service.update));
+
 // // READ
 // router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
 
