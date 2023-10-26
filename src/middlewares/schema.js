@@ -80,11 +80,19 @@ const userDao =
             table.integer("duration").notNullable();
             table.integer("vl_balance").notNullable();
             table.integer("sl_balance").notNullable();
-            table.string("reason").notNullable();
+            table.text("reason").notNullable();
             table.binary("leave_form").nullable();
             table.string("status").nullable();
             table.string("decision").nullable();
             table.string("remarks").nullable();
+            table
+              .integer("approved_by")
+              .unsigned()
+              .nullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
+            table.index("name");
             table.timestamps(true, true);
             table
               .integer("user_id")
@@ -93,7 +101,6 @@ const userDao =
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
-            table.index("name");
           })
 
           .createTable("equipment", (table) => {

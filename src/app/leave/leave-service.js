@@ -20,7 +20,6 @@ class LeaveService {
       }
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
-      const leaveStatus = getLeaveStatus(body.leave_form);
       const leaveDuration = Math.ceil(
         (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
       );
@@ -41,7 +40,7 @@ class LeaveService {
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
-      body.status = leaveStatus;
+      body.status = "Pending";
       const result = await store.add(userId, body);
       res.status(201).json({
         success: true,
