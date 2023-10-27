@@ -23,8 +23,8 @@ class LeaveStore {
         reason: body?.reason,
         leave_form: body?.leave_form,
         status: body.status,
-        decision: body?.decision,
         remarks: body?.remarks,
+        processing: body?.decision,
         user_id: userId,
       });
       return result;

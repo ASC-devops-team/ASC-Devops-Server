@@ -70,7 +70,12 @@ class AttendanceStore {
   // READS
   async getData(userId, startDate, endDate) {
     try {
-      let query = this.db(this.table).select().orderBy("date", "desc");
+      let query = this.db(this.table)
+        .select()
+        .orderBy([
+          { column: "date", order: "desc" },
+          { column: "clock_out", order: "desc" },
+        ]);
       if (userId) {
         query = query.where("user_id", userId);
       }

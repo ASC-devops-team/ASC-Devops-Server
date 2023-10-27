@@ -83,10 +83,9 @@ const userDao =
             table.text("reason").notNullable();
             table.binary("leave_form").nullable();
             table.string("status").nullable();
-            table.string("decision").nullable();
-            table.string("remarks").nullable();
+            table.text("remarks").nullable();
             table
-              .integer("approved_by")
+              .integer("processing")
               .unsigned()
               .nullable()
               .references("uuid")
