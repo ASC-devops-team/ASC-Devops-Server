@@ -56,11 +56,17 @@ class LeaveService {
     try {
       const store = new Store(req.db);
       const { startDate, endDate } = req.query;
-      let result = [];
-      result = await store.getData(startDate, endDate);
+      let table = [];
+      let pending = 0;
+      let approved = 0;
+      let rejected = 0;
+      table = await store.getData(startDate, endDate);
+      pending = await store.getStatCount("Pending");
+      approved = await store.getStatCount("Approved");
+      rejected = await store.getStatCount("Rejected");
       return res.status(200).send({
         success: true,
-        data: result,
+        data: { table, pending, approved, rejected },
       });
     } catch (err) {
       next(err);

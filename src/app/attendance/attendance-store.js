@@ -100,6 +100,45 @@ class AttendanceStore {
       throw error;
     }
   }
+  
+  // Stat Count
+  async getStatCount(toCount) {
+    try {
+      const currentDate = new Date();
+      const result = await this.db(this.table)
+        .count()
+        .where(this.cols.status, "like", `%${toCount}%`)
+        .whereRaw(`Date(${this.cols.date}) = ?`, [
+          currentDate.toISOString().split("T")[0],
+        ]);
+      const lateCount = result[0]["count(*)"] || 0;
+      return lateCount;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Count Absent
+  // async getAbsent() {
+  //   try {
+  //     const currentDate = new Date();
+  //     const result = await this.db(this.table)
+  //       .count()
+  //       .where((builder) => {
+  //         builder
+  //           .where(this.cols.setting, "VL")
+  //           .orWhere(this.cols.setting, "SL")
+  //           .orWhere(this.cols.setting, "EL");
+  //       })
+  //       .whereRaw(`Date(${this.cols.date}) = ?`, [
+  //         currentDate.toISOString().split("T")[0],
+  //       ]);
+  //     const lateCount = result[0]["count(*)"] || 0;
+  //     return lateCount;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   // GET Leave Balance
   async getLeaveCountByUserId(userId, leaveType) {

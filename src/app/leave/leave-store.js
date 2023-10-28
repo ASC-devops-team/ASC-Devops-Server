@@ -57,6 +57,21 @@ class LeaveStore {
     }
   }
 
+  // Stat Count
+  async getStatCount(toCount) {
+    try {
+      const currentYear = new Date().getFullYear();
+      const result = await this.db(this.table)
+        .count()
+        .where(this.cols.status, "like", `%${toCount}%`)
+        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
+      const lateCount = result[0]["count(*)"] || 0;
+      return lateCount;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // // GET EXISTING
   // async getByUerIdAndDate(userId, date) {
   //   return new Promise(async (resolve, reject) => {

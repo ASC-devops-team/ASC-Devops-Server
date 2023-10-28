@@ -26,15 +26,21 @@ class AttendaceService {
         throw new Error("Invalid userRole");
       }
       const startWorkTime = buildTime(roleInfo.start);
-      let status = currentTime <= startWorkTime ? "Present" : "Late";
-      let late =
-        status === "Late"
-          ? getTimeDifference(startWorkTime, currentTime)
-          : null;
+      const gracePeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+      let status = "Present";
+      let late = null;
+
+      if (currentTime > startWorkTime + gracePeriod) {
+        status = "Late";
+        late = getTimeDifference(startWorkTime, currentTime + gracePeriod);
+      }
+
       body.clock_in = current;
       body.date = current;
-      body.late = late;
+      body.late = late > 0 ? late : null;
       body.status = status;
+
       const result = await store.clockin(body);
       res.status(201).json({
         success: true,
@@ -43,7 +49,7 @@ class AttendaceService {
     } catch (err) {
       next(err);
     }
-  }
+  }  
 
   // GET EXISTING (if existing it mean user has already logged in so next call will be clock-out)
   async getByUerIdAndDate(req, res, next) {
@@ -113,11 +119,20 @@ class AttendaceService {
     try {
       const store = new Store(req.db);
       const { userId, startDate, endDate } = req.query;
-      let result = [];
-      result = await store.getData(userId, startDate, endDate);
+      let table = [];
+      let late = 0;
+      let overtime = 0;
+      let present = 0;
+      let absent = 0;
+
+      table = await store.getData(userId, startDate, endDate);
+      late = await store.getStatCount("Late");
+      overtime = await store.getStatCount("Overtime");
+      present = await store.getStatCount("Present");
+      absent = await store.getStatCount("Absent");
       return res.status(200).send({
         success: true,
-        data: result,
+        data: { table, late, overtime, present, absent },
       });
     } catch (err) {
       next(err);
