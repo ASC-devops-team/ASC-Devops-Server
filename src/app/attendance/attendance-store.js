@@ -76,11 +76,12 @@ class AttendanceStore {
           { column: "date", order: "desc" },
           { column: "clock_out", order: "desc" },
         ]);
-      if (userId) {
-        query = query.where("user_id", userId);
+      if (userId !== undefined && userId !== null && userId !== "") {
+        console.log(userId, startDate, endDate);
+        query.where("user_id", userId);
       }
       if (startDate && endDate) {
-        query = query.whereBetween("date", [startDate, endDate]);
+        query.whereBetween("date", [startDate, endDate]);
       }
       const results = await query;
       // Filter out data with dates beyond the current date
@@ -90,11 +91,12 @@ class AttendanceStore {
         return rowDate <= currentDate;
       });
       const convertedResults = convertDatesToTimezone(
-        filteredResults.map((row) => row),
+        filteredResults.map((row) => ({ ...row })),
         [this.cols.date]
       );
       return convertedResults;
     } catch (error) {
+      // Add more specific error handling if needed
       throw error;
     }
   }

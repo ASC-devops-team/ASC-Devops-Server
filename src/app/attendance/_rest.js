@@ -9,23 +9,23 @@ const service = new Service();
 const router = express.Router();
 
 // CREATE
-router.post("/attendance", db, asyncHandler(service.clockin));
+router.post("/attendance/in", db, asyncHandler(service.clockin));
 
 // GET EXISTING
 router.get(
-  "/attendance/get/existing",
+  "/attendance/existing",
   db,
   asyncHandler(service.getByUerIdAndDate)
 );
 
-// UPDATE
-router.put("/attendance/update", db, asyncHandler(service.clockout));
+// UPDATE Clock out
+router.put("/attendance/out", db, asyncHandler(service.clockout));
 
 // READS
 router.get("/attendance/get", db, asyncHandler(service.getData));
 
 // UPDATE ATTENDANCE DTR
-router.put("/attendance", db, asyncHandler(service.update));
+router.put("/attendance/update", db, asyncHandler(service.update));
 
 // // READ
 // router.get("/attendance/get/:uuid", auth, db, asyncHandler(service.get));
