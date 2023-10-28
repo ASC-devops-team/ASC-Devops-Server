@@ -58,15 +58,14 @@ class LeaveStore {
   }
 
   // Stat Count
-  async getStatCount(toCount) {
+  async getStatCount(toCount, startDate, endDate) {
     try {
-      const currentYear = new Date().getFullYear();
       const result = await this.db(this.table)
         .count()
         .where(this.cols.status, "like", `%${toCount}%`)
-        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
-      const lateCount = result[0]["count(*)"] || 0;
-      return lateCount;
+        .whereBetween("date", [startDate, endDate]);
+      const statCount = result[0]["count(*)"] || 0;
+      return statCount;
     } catch (error) {
       throw error;
     }

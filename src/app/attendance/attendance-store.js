@@ -100,19 +100,16 @@ class AttendanceStore {
       throw error;
     }
   }
-  
+
   // Stat Count
-  async getStatCount(toCount) {
+  async getStatCount(toCount, startDate, endDate) {
     try {
-      const currentDate = new Date();
       const result = await this.db(this.table)
         .count()
         .where(this.cols.status, "like", `%${toCount}%`)
-        .whereRaw(`Date(${this.cols.date}) = ?`, [
-          currentDate.toISOString().split("T")[0],
-        ]);
-      const lateCount = result[0]["count(*)"] || 0;
-      return lateCount;
+        .whereBetween("date", [startDate, endDate]);
+      const statCount = result[0]["count(*)"] || 0;
+      return statCount;
     } catch (error) {
       throw error;
     }

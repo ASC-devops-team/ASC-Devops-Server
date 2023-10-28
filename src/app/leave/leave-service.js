@@ -62,10 +62,10 @@ class LeaveService {
       let approved = 0;
       let rejected = 0;
       table = await store.getData(startDate, endDate);
-      pending = await store.getStatCount("Pending");
-      progress = await store.getStatCount("In Progress");
-      approved = await store.getStatCount("Approved");
-      rejected = await store.getStatCount("Rejected");
+      pending = await store.getStatCount("Pending", startDate, endDate);
+      progress = await store.getStatCount("In Progress", startDate, endDate);
+      approved = await store.getStatCount("Approved", startDate, endDate);
+      rejected = await store.getStatCount("Rejected", startDate, endDate);
       return res.status(200).send({
         success: true,
         data: { table, pending, progress, approved, rejected },

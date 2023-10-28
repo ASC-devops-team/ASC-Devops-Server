@@ -126,10 +126,10 @@ class AttendaceService {
       let absent = 0;
 
       table = await store.getData(userId, startDate, endDate);
-      late = await store.getStatCount("Late");
-      overtime = await store.getStatCount("Overtime");
-      present = await store.getStatCount("Present");
-      absent = await store.getStatCount("Absent");
+      late = await store.getStatCount("Late", startDate, endDate);
+      overtime = await store.getStatCount("Overtime", startDate, endDate);
+      present = await store.getStatCount("Present", startDate, endDate);
+      absent = await store.getStatCount("Absent", startDate, endDate);
       return res.status(200).send({
         success: true,
         data: { table, late, overtime, present, absent },
