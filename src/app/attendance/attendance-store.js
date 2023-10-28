@@ -9,7 +9,7 @@ class AttendanceStore {
   }
 
   // CREATE
-  async add(body) {
+  async clockin(body) {
     try {
       const result = await this.db(this.table).insert({
         date: body.date,
@@ -48,7 +48,7 @@ class AttendanceStore {
   }
 
   // UPDATE (Clock Out)
-  async update(body) {
+  async clockout(body) {
     try {
       await this.db(this.table).where(this.cols.id, body.uuid).update({
         clock_out: body.clock_out,

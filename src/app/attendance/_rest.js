@@ -9,7 +9,7 @@ const service = new Service();
 const router = express.Router();
 
 // CREATE
-router.post("/attendance", db, asyncHandler(service.add));
+router.post("/attendance", db, asyncHandler(service.clockin));
 
 // GET EXISTING
 router.get(
@@ -19,7 +19,7 @@ router.get(
 );
 
 // UPDATE
-router.put("/attendance/update", db, asyncHandler(service.update));
+router.put("/attendance/update", db, asyncHandler(service.clockout));
 
 // READS
 router.get("/attendance/get", db, asyncHandler(service.getData));

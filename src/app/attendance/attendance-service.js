@@ -8,7 +8,7 @@ const {
 
 class AttendaceService {
   // CLOCK IN
-  async add(req, res, next) {
+  async clockin(req, res, next) {
     try {
       const current = new Date();
       const currentTime = current.getTime();
@@ -35,7 +35,7 @@ class AttendaceService {
       body.date = current;
       body.late = late;
       body.status = status;
-      const result = await store.add(body);
+      const result = await store.clockin(body);
       res.status(201).json({
         success: true,
         data: result,
@@ -61,7 +61,7 @@ class AttendaceService {
   }
 
   // CLOCK OUT
-  async update(req, res, next) {
+  async clockout(req, res, next) {
     try {
       const store = new Store(req.db);
       const body = req.body;
@@ -95,7 +95,7 @@ class AttendaceService {
       body.overtime = overtime;
       body.work_hours = totalWorkHours;
       body.status = status;
-      const result = await store.update(body);
+      const result = await store.clockout(body);
       if (result === 0) {
         throw new NotFoundError("Data Not Found");
       }
