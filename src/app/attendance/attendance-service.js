@@ -27,20 +27,16 @@ class AttendaceService {
       }
       const startWorkTime = buildTime(roleInfo.start);
       const gracePeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
-
-      let status = "Present";
-      let late = null;
-
-      if (currentTime > startWorkTime + gracePeriod) {
-        status = "Late";
-        late = getTimeDifference(startWorkTime, currentTime + gracePeriod);
-      }
-
+      let status =
+        currentTime <= startWorkTime + gracePeriod ? "Present" : "Late";
+      let late =
+        status === "Late"
+          ? getTimeDifference(startWorkTime, currentTime)
+          : null;
       body.clock_in = current;
       body.date = current;
-      body.late = late > 0 ? late : null;
+      body.late = late;
       body.status = status;
-
       const result = await store.clockin(body);
       res.status(201).json({
         success: true,
@@ -49,7 +45,7 @@ class AttendaceService {
     } catch (err) {
       next(err);
     }
-  }  
+  }
 
   // GET EXISTING (if existing it mean user has already logged in so next call will be clock-out)
   async getByUerIdAndDate(req, res, next) {
