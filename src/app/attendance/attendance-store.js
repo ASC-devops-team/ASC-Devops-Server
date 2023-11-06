@@ -77,7 +77,6 @@ class AttendanceStore {
           { column: "clock_out", order: "desc" },
         ]);
       if (userId !== undefined && userId !== null && userId !== "") {
-        console.log(userId, startDate, endDate);
         query.where("user_id", userId);
       }
       if (startDate && endDate) {
