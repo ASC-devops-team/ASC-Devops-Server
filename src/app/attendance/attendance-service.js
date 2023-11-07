@@ -48,11 +48,11 @@ class AttendaceService {
   }
 
   // GET EXISTING (if existing it mean user has already logged in so next call will be clock-out)
-  async getByUerIdAndDate(req, res, next) {
+  async getByUserIdAndDate(req, res, next) {
     try {
       const store = new Store(req.db);
       const { userId, date } = req.query;
-      const result = await store.getByUerIdAndDate(userId, date);
+      const result = await store.getByUserIdAndDate(userId, date);
       return res.status(200).send({
         success: true,
         data: result,

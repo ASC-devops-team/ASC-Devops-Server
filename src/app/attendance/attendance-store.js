@@ -30,7 +30,7 @@ class AttendanceStore {
   }
 
   // GET EXISTING
-  async getByUerIdAndDate(userId, date) {
+  async getByUserIdAndDate(userId, date) {
     try {
       const result = await this.db(this.table)
         .select()

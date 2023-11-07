@@ -15,7 +15,7 @@ router.post("/attendance/in", db, asyncHandler(service.clockin));
 router.get(
   "/attendance/existing",
   db,
-  asyncHandler(service.getByUerIdAndDate)
+  asyncHandler(service.getByUserIdAndDate)
 );
 
 // UPDATE Clock out
