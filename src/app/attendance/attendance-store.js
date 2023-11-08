@@ -74,6 +74,7 @@ class AttendanceStore {
         .select()
         .orderBy([
           { column: "date", order: "desc" },
+          { column: "clock_in", order: "desc" },
           { column: "clock_out", order: "desc" },
         ]);
       if (userId !== undefined && userId !== null && userId !== "") {

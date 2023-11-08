@@ -12,12 +12,6 @@ class LeaveService {
       const store = new Store(req.db);
       const body = req.body;
       const userId = req.query.userId;
-      const file = req.file;
-      if (!file) {
-        body.leave_form = null;
-      } else {
-        body.leave_form = file.buffer;
-      }
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
       const leaveDuration = Math.ceil(
@@ -40,7 +34,6 @@ class LeaveService {
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
-      body.status = "Pending";
       const result = await store.add(userId, body);
       res.status(201).json({
         success: true,
@@ -81,18 +74,12 @@ class LeaveService {
       const store = new Store(req.db);
       const uuid = req.params.uuid;
       const body = req.body;
-      console.log(body);
-      // const file = req.file;
-      // delete body.leave_form;
-      // if (!file) {
-      //   body.leave_form = null;
-      // } else {
-      //   body.leave_form = file.buffer;
-      // }
-      const result = store.update(uuid, body);
+      const result = await store.update(uuid, body);
       if (result === 0) {
-        throw new NotFoundError("User not found");
+        throw new NotFoundError("ID not found");
       }
+      
+      
       return res.status(200).send({
         success: true,
         message: "Successfully Updated",
@@ -212,59 +199,5 @@ function getTimeDifference(startTime, endTime) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-function getLeaveStatus(leaveFrom) {
-  if (!leaveFrom) {
-    return "Awaiting Form";
-  } else {
-    return "Pending";
-  }
-}
-
-function calculateStatusAndTimes(
-  userRole,
-  currentTime,
-  status,
-  checkTimes,
-  totalWorkHours
-) {
-  let undertime = null;
-  let overtime = null;
-  const hour = parseInt(totalWorkHours.split(":")[0]);
-  for (const checkTime of checkTimes) {
-    if (userRole === checkTime.access_level) {
-      if (hour < 8) {
-        if (currentTime < buildTime(checkTime.start) && status === "Present") {
-          status = "Undertime";
-          undertime = getTimeDifference(
-            buildTime(checkTime.start),
-            currentTime
-          );
-        } else if (
-          currentTime < buildTime(checkTime.start) &&
-          status === "Late"
-        ) {
-          status = "Late & Undertime";
-          undertime = getTimeDifference(
-            currentTime,
-            buildTime(checkTime.start)
-          );
-        }
-      } else if (hour >= 9) {
-        if (currentTime > buildTime(checkTime.end) && status === "Present") {
-          status = "Overtime";
-          overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
-        } else if (
-          currentTime > buildTime(checkTime.end) &&
-          status === "Late"
-        ) {
-          status = "Late & Overtime";
-          overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
-        }
-      }
-      break; // Exit the loop after finding the applicable role
-    }
-  }
-  return { status, undertime, overtime };
-}
 
 module.exports = LeaveService;

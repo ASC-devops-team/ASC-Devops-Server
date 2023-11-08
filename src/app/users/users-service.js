@@ -196,7 +196,7 @@ class UserService {
       if (body.password) {
         body.password = await bcrypt.hash(body.password, 10);
       }
-      const result = store.updateUser(uuid, body);
+      const result = await store.updateUser(uuid, body);
       if (result === 0) {
         throw new NotFoundError("User not found");
       }

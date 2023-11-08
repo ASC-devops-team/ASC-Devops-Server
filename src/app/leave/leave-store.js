@@ -21,7 +21,6 @@ class LeaveStore {
         vl_balance: body.vl_balance,
         sl_balance: body.sl_balance,
         reason: body?.reason,
-        leave_form: body?.leave_form,
         status: body.status,
         remarks: body?.remarks,
         processing: body?.decision,
@@ -94,7 +93,7 @@ class LeaveStore {
   // UPDATE
   async update(uuid, body) {
     try {
-      return await this.db(this.table).where(this.cols.id, uuid).update({
+      const result = await this.db(this.table).where(this.cols.id, uuid).update({
         name: body?.name,
         date: body?.date,
         type: body?.type,
@@ -109,6 +108,7 @@ class LeaveStore {
         decision: body?.decision,
         remarks: body?.remarks,
       });
+      return result;
     } catch (error) {
       throw error;
     }

@@ -81,8 +81,7 @@ const userDao =
             table.integer("vl_balance").notNullable();
             table.integer("sl_balance").notNullable();
             table.text("reason").notNullable();
-            table.binary("leave_form").nullable();
-            table.string("status").nullable();
+            table.string("status").notNullable().defaultTo("Pending");
             table.text("remarks").nullable();
             table
               .integer("processing")
