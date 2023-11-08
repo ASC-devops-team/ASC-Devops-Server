@@ -94,7 +94,13 @@ const userDao =
               .inTable("users")
               .onDelete("CASCADE");
             table.index("name");
-            table.timestamps(true, true);
+            table
+              .integer("route_id")
+              .unsigned()
+              .notNullable()
+              .references("uuid")
+              .inTable("leave_approval_route")
+              .onDelete("CASCADE");
             table
               .integer("user_id")
               .unsigned()
@@ -102,6 +108,23 @@ const userDao =
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
+              table.timestamps(true, true);
+          })
+
+          .createTable("leave_approval_route", (table) => {
+            table.increments("uuid").primary();
+            table.integer("boss1").nullable();
+            table.integer("boss2").nullable();
+            table.integer("boss3").nullable();
+            table.integer("boss4").nullable();
+            table.string("boss1_name").nullable();
+            table.string("boss2_name").nullable();
+            table.string("boss3_name").nullable();
+            table.string("boss4_name").nullable();
+            table.string("boss1_decision").nullable();
+            table.string("boss2_decision").nullable();
+            table.string("boss3_decision").nullable();
+            table.string("boss4_decision").nullable();
           })
 
           .createTable("equipment", (table) => {
