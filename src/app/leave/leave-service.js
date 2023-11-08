@@ -17,20 +17,24 @@ class LeaveService {
       const leaveDuration = Math.ceil(
         (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
       );
-      if (body.type === "VL" || body.type === "SL" || body.type === "EL") {
+      if (
+        body.leave_type === "VL" ||
+        body.leave_type === "SL" ||
+        body.leave_type === "EL"
+      ) {
         const leaveCount = await attendanceStore.getLeaveCountByUserId(
           userId,
-          body.type
+          body.leave_type
         );
         if (leaveCount >= 15) {
           throw new BadRequestError(
-            `Reached the maximum ${body.type} for this year`
+            `Reached the maximum ${body.leave_type} for this year`
           );
         }
         body.date = current;
         body.duration = leaveDuration;
-        body.vl_balance = body.type === "VL" ? leaveCount : 0;
-        body.sl_balance = body.type === "SL" ? leaveCount : 0;
+        body.vl_balance = body.leave_type === "VL" ? leaveCount : 0;
+        body.sl_balance = body.leave_type === "SL" ? leaveCount : 0;
       } else {
         throw new BadRequestError("Invalid leave type.");
       }

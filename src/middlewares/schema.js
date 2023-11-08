@@ -74,7 +74,8 @@ const userDao =
             table.increments("uuid").primary();
             table.string("name").notNullable();
             table.date("date").notNullable();
-            table.string("type").notNullable();
+            table.string("leave_type").notNullable();
+            table.string("day_type").notNullable();
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
             table.integer("duration").notNullable();

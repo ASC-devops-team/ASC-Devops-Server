@@ -14,7 +14,8 @@ class LeaveStore {
       const result = await this.db(this.table).insert({
         name: body.name,
         date: body.date,
-        type: body.type,
+        leave_type: body?.leave_type,
+        day_type: body?.day_type,
         date_from: body.date_from,
         date_to: body.date_to,
         duration: body.duration,
@@ -93,21 +94,24 @@ class LeaveStore {
   // UPDATE
   async update(uuid, body) {
     try {
-      const result = await this.db(this.table).where(this.cols.id, uuid).update({
-        name: body?.name,
-        date: body?.date,
-        type: body?.type,
-        date_from: body?.date_from,
-        date_to: body?.date_to,
-        duration: body?.duration,
-        vl_balance: body?.vl_balance,
-        sl_balance: body?.sl_balance,
-        reason: body?.reason,
-        leave_form: body?.leave_form,
-        status: body?.status,
-        decision: body?.decision,
-        remarks: body?.remarks,
-      });
+      const result = await this.db(this.table)
+        .where(this.cols.id, uuid)
+        .update({
+          name: body?.name,
+          date: body?.date,
+          leave_type: body?.leave_type,
+          day_type: body?.day_type,
+          date_from: body?.date_from,
+          date_to: body?.date_to,
+          duration: body?.duration,
+          vl_balance: body?.vl_balance,
+          sl_balance: body?.sl_balance,
+          reason: body?.reason,
+          leave_form: body?.leave_form,
+          status: body?.status,
+          decision: body?.decision,
+          remarks: body?.remarks,
+        });
       return result;
     } catch (error) {
       throw error;
