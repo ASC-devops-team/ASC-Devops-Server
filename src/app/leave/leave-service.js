@@ -72,6 +72,21 @@ class LeaveService {
     }
   }
 
+  // Get Table Data by User
+  async getDataByUser(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const userId = req.params.uuid;
+      const table = await store.getDataByUser(userId);
+      return res.status(200).send({
+        success: true,
+        data: table,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // Update user
   async update(req, res, next) {
     try {
@@ -82,8 +97,7 @@ class LeaveService {
       if (result === 0) {
         throw new NotFoundError("ID not found");
       }
-      
-      
+
       return res.status(200).send({
         success: true,
         message: "Successfully Updated",

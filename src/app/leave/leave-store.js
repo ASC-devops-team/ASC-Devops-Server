@@ -49,6 +49,33 @@ class LeaveStore {
           this.cols.updatedAt,
           this.cols.dateFrom,
           this.cols.dateTo,
+          this.cols.dateApproved,
+          this.cols.dateRejected,
+        ]
+      );
+      return convertedResults;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getDataByUser(userId) {
+    try {
+      let query = this.db(this.table)
+        .select()
+        .where(this.cols.userId, userId)
+        .orderBy(this.cols.date, "desc");
+      const results = await query;
+      const convertedResults = convertDatesToTimezone(
+        results.map((row) => row),
+        [
+          this.cols.date,
+          this.cols.createdAt,
+          this.cols.updatedAt,
+          this.cols.dateFrom,
+          this.cols.dateTo,
+          this.cols.dateApproved,
+          this.cols.dateRejected,
         ]
       );
       return convertedResults;

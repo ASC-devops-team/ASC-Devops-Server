@@ -78,6 +78,8 @@ const userDao =
             table.string("day_type").notNullable();
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
+            table.date("date_approved").nullable();
+            table.date("date_rejected").nullable();
             table.integer("duration").notNullable();
             table.integer("vl_balance").notNullable();
             table.integer("sl_balance").notNullable();
