@@ -22,7 +22,7 @@ router.get("/leave/get/:uuid", db, asyncHandler(service.getDataByUser));
 // router.get("/leave/get/existing", db, asyncHandler(service.getByUerIdAndDate));
 
 // UPDATE
-router.put("/leave/:uuid", db, asyncHandler(service.update));
+router.put("/leave", db, asyncHandler(service.update));
 
 // // READ
 // router.get("/leave/get/:uuid", auth, db, asyncHandler(service.get));

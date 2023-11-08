@@ -119,10 +119,10 @@ class LeaveStore {
   // }
 
   // UPDATE
-  async update(uuid, body) {
+  async update(body) {
     try {
       const result = await this.db(this.table)
-        .where(this.cols.id, uuid)
+        .where(this.cols.id, body?.uuid)
         .update({
           name: body?.name,
           date: body?.date,

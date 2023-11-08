@@ -91,9 +91,8 @@ class LeaveService {
   async update(req, res, next) {
     try {
       const store = new Store(req.db);
-      const uuid = req.params.uuid;
       const body = req.body;
-      const result = await store.update(uuid, body);
+      const result = await store.update(body);
       if (result === 0) {
         throw new NotFoundError("ID not found");
       }
