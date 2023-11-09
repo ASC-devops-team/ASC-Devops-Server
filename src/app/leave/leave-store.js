@@ -36,7 +36,7 @@ class LeaveStore {
   // Get Table data
   async getData(startDate, endDate) {
     try {
-      let query = this.db(this.table).select().orderBy(this.cols.date, "desc");
+      let query = this.db(this.table).select().orderBy(this.cols.id, "desc");
       if (startDate && endDate) {
         query = query.whereBetween(this.cols.date, [startDate, endDate]);
       }
@@ -64,7 +64,7 @@ class LeaveStore {
       let query = this.db(this.table)
         .select()
         .where(this.cols.userId, userId)
-        .orderBy(this.cols.date, "desc");
+        .orderBy(this.cols.id, "desc");
       const results = await query;
       const convertedResults = convertDatesToTimezone(
         results.map((row) => row),
