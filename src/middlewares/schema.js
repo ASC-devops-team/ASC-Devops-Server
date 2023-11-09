@@ -96,7 +96,9 @@ const userDao =
             table.integer("vl_balance").notNullable();
             table.integer("sl_balance").notNullable();
             table.text("reason").notNullable();
+            table.text("decision").nullable(); // if 1 decline = rejected
             table.string("status").notNullable().defaultTo("Pending");
+            table.text("remarks").nullable();
             table.text("remarks").nullable();
             table
               .integer("processing")
