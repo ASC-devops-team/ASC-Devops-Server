@@ -82,6 +82,21 @@ const userDao =
             table.string("boss4_name").nullable();
           })
 
+          .createTable("leave_balance", (table) => {
+            table.increments("uuid").primary();
+            table.integer("sl").nullable().defaultTo(15);
+            table.integer("vl").nullable().defaultTo(15);
+            table.integer("used_leaves").nullable().defaultTo(0);
+            table
+              .integer("user_id")
+              .unsigned()
+              .notNullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
+            table.timestamps(true, true);
+          })
+
           .createTable("leave", (table) => {
             table.increments("uuid").primary();
             table.string("name").notNullable();
@@ -92,7 +107,7 @@ const userDao =
             table.date("date_to").notNullable();
             table.date("date_approved").nullable();
             table.date("date_rejected").nullable();
-            table.integer("duration").notNullable();
+            table.double("duration").notNullable();
             table.integer("vl_balance").notNullable();
             table.integer("sl_balance").notNullable();
             table.text("reason").notNullable();
