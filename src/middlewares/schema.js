@@ -114,7 +114,6 @@ const userDao =
             table.text("decision").nullable(); // if 1 decline = rejected
             table.string("status").notNullable().defaultTo("Pending");
             table.text("remarks").nullable();
-            table.text("remarks").nullable();
             table
               .integer("processing")
               .unsigned()
