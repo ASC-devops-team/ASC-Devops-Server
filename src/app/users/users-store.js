@@ -10,7 +10,7 @@ class UserStore {
 
   async getUsername(email) {
     try {
-      return await this.db("users").where("email", email).first();
+      return await this.db("users").where("email", email).andWhere("status", 1).first();
     } catch (error) {
       throw error;
     }
