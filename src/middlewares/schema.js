@@ -70,15 +70,16 @@ const userDao =
             table.index("name");
           })
 
-          .createTable("leave_approval_route", (table) => {
+          .createTable("approval_route", (table) => {
             table.increments("uuid").primary();
+            table.string("name").notNullable().unique();
             table.integer("boss1").nullable();
-            table.integer("boss2").nullable();
-            table.integer("boss3").nullable();
-            table.integer("boss4").nullable();
             table.string("boss1_name").nullable();
+            table.integer("boss2").nullable();
             table.string("boss2_name").nullable();
+            table.integer("boss3").nullable();
             table.string("boss3_name").nullable();
+            table.integer("boss4").nullable();
             table.string("boss4_name").nullable();
           })
 
