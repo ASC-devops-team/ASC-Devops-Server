@@ -122,7 +122,13 @@ const userDao =
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
-            table.index("name");
+            table
+              .integer("reviewed_by")
+              .unsigned()
+              .nullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
             table
               .integer("user_id")
               .unsigned()

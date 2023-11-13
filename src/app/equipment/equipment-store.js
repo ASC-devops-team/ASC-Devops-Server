@@ -130,11 +130,19 @@ function convertDatesToTimezone(rows, dateFields) {
   return rows.map((row) => {
     const convertedFields = {};
     dateFields.forEach((field) => {
-      const convertedDate = moment
-        .utc(row[field])
-        .tz("Asia/Singapore")
-        .format("YYYY-MM-DD");
-      convertedFields[field] = convertedDate;
+      const originalDate = row[field];
+
+      // Check if the date field is null
+      if (originalDate === null) {
+        convertedFields[field] = null;
+      } else {
+        // Convert non-null date to the desired format
+        const convertedDate = moment
+          .utc(originalDate)
+          .tz("Asia/Singapore")
+          .format("YYYY-MM-DD");
+        convertedFields[field] = convertedDate;
+      }
     });
     return { ...row, ...convertedFields };
   });

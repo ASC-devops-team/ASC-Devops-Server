@@ -24,7 +24,8 @@ class LeaveStore {
         reason: body?.reason,
         status: body.status,
         remarks: body?.remarks,
-        processing: body?.decision,
+        processing: body?.processing,
+        reviewed_by: body?.reviewed_by,
         user_id: userId,
       });
       return result;
@@ -98,31 +99,10 @@ class LeaveStore {
     }
   }
 
-  // // GET EXISTING
-  // async getByUerIdAndDate(userId, date) {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       const result = await this.db(this.table)
-  //         .select()
-  //         .where(this.cols.userid, userId)
-  //         .andWhere(this.cols.date, date)
-  //         .first();
-  //       if (result) {
-  //         resolve(result);
-  //       } else {
-  //         resolve(null);
-  //       }
-  //     } catch (error) {
-  //       reject(error);
-  //     }
-  //   });
-  // }
-
   // UPDATE
   async update(body) {
     try {
       const result = await this.db(this.table)
-        .where(this.cols.id, body?.uuid)
         .update({
           name: body?.name,
           date: body?.date,
@@ -130,15 +110,19 @@ class LeaveStore {
           day_type: body?.day_type,
           date_from: body?.date_from,
           date_to: body?.date_to,
+          date_approved: body?.date_approved,
+          date_rejected: body?.date_rejected,
           duration: body?.duration,
           vl_balance: body?.vl_balance,
           sl_balance: body?.sl_balance,
           reason: body?.reason,
-          leave_form: body?.leave_form,
-          status: body?.status,
           decision: body?.decision,
+          status: body?.status,
           remarks: body?.remarks,
-        });
+          processing: body?.processing,
+          reviewed_by: body?.reviewed_by,
+        })
+        .where(this.cols.id, body?.uuid);
       return result;
     } catch (error) {
       throw error;
@@ -176,11 +160,19 @@ function convertDatesToTimezone(rows, dateFields) {
   return rows.map((row) => {
     const convertedFields = {};
     dateFields.forEach((field) => {
-      const convertedDate = moment
-        .utc(row[field])
-        .tz("Asia/Singapore")
-        .format("YYYY-MM-DD");
-      convertedFields[field] = convertedDate;
+      const originalDate = row[field];
+
+      // Check if the date field is null
+      if (originalDate === null) {
+        convertedFields[field] = null;
+      } else {
+        // Convert non-null date to the desired format
+        const convertedDate = moment
+          .utc(originalDate)
+          .tz("Asia/Singapore")
+          .format("YYYY-MM-DD");
+        convertedFields[field] = convertedDate;
+      }
     });
     return { ...row, ...convertedFields };
   });

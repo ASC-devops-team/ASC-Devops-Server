@@ -151,12 +151,18 @@ function convertDatesToTimezone(rows, dateFields) {
   return rows.map((row) => {
     const convertedFields = {};
     dateFields.forEach((field) => {
-      if (row[field]) {
-        const convertedDate = moment(row[field]).format("YYYY-MM-DD");
-        convertedFields[field] = convertedDate;
+      const originalDate = row[field];
+
+      // Check if the date field is null
+      if (originalDate === null) {
+        convertedFields[field] = null;
       } else {
-        // If the field is null or undefined, keep it as-is
-        convertedFields[field] = row[field];
+        // Convert non-null date to the desired format
+        const convertedDate = moment
+          .utc(originalDate)
+          .tz("Asia/Singapore")
+          .format("YYYY-MM-DD");
+        convertedFields[field] = convertedDate;
       }
     });
     return { ...row, ...convertedFields };
