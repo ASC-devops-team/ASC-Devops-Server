@@ -74,7 +74,7 @@ class LeaveStore {
       const result = await this.db(this.table)
         .select(
           this.db.raw(
-            "COUNT(CASE WHEN processing = ? THEN 1 END) AS pending_count",
+            'COUNT(CASE WHEN processing = ? AND status = "Pending" THEN 1 END) AS pending_count',
             [reviewer]
           ),
           this.db.raw(
