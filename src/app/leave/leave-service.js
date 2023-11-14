@@ -43,7 +43,6 @@ class LeaveService {
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
-      console.log(body);
       const result = await store.add(userId, body);
       res.status(201).json({
         success: true,
@@ -92,9 +91,23 @@ class LeaveService {
   async update(req, res, next) {
     try {
       const store = new Store(req.db);
+      const routingStore = new RoutingStore(req.db);
       const body = req.body;
-      if (body.status === "Approved") {
+      const routing = await routingStore.getData("leave");
+      if (
+        body.status === "Approved" &&
+        body.reviewed_by !== routing.final_boss
+      ) {
+        if (body.processing === routing.boss1) {
+          body.processing = routing.boss2;
+        } else if (body.processing === routing.boss2) {
+          body.processing = routing.boss3;
+        } else if (body.processing === routing.boss3) {
+          body.processing = routing.boss4;
+        }
         body.status = "Pending";
+      } else {
+        body.processing = null;
       }
       const result = await store.update(body);
       if (result === 0) {
