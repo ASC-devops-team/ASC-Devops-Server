@@ -81,6 +81,7 @@ const userDao =
             table.string("boss3_name").nullable();
             table.integer("boss4").nullable();
             table.string("boss4_name").nullable();
+            table.integer("final_boss").notNullable();
           })
 
           .createTable("leave_balance", (table) => {
@@ -114,7 +115,7 @@ const userDao =
             table.text("reason").notNullable();
             table.text("decision").nullable(); // if 1 decline = rejected
             table.string("status").notNullable().defaultTo("Pending");
-            table.text("remarks").nullable();
+            table.text("response").nullable();
             table
               .integer("processing")
               .unsigned()

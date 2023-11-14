@@ -19,6 +19,7 @@ class ApprovalRouteStore {
           boss3_name: body?.boss3_name,
           boss4: body?.boss4,
           boss4_name: body?.boss4_name,
+          final_boss: body?.final_boss,
         })
         .onConflict("name")
         .merge();
@@ -29,9 +30,9 @@ class ApprovalRouteStore {
   }
 
   // READS
-  async getData() {
+  async getData(name) {
     try {
-      let query = this.db("approval_route").select();
+      let query = this.db("approval_route").select().where("name", name).first();
       const results = await query;
       return results;
     } catch (error) {

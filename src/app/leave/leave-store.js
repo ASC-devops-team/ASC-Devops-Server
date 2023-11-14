@@ -23,7 +23,7 @@ class LeaveStore {
         sl_balance: body.sl_balance,
         reason: body?.reason,
         status: body.status,
-        remarks: body?.remarks,
+        response: body?.response,
         processing: body?.processing,
         reviewed_by: body?.reviewed_by,
         user_id: userId,
@@ -35,9 +35,17 @@ class LeaveStore {
   }
 
   // Get Table data
-  async getData(startDate, endDate) {
+  async getData(startDate, endDate, reviewer) {
     try {
-      let query = this.db(this.table).select().orderBy(this.cols.id, "desc");
+      let query = this.db(this.table)
+        .select()
+        .where(function () {
+          this.where("processing", reviewer)
+            .orWhere("status", "=", "Approved")
+            .orWhere("status", "=", "Rejected")
+            .orWhere("status", "=", "Withdrawn");
+        })
+        .orderBy(this.cols.id, "desc");
       if (startDate && endDate) {
         query = query.whereBetween(this.cols.date, [startDate, endDate]);
       }
@@ -55,6 +63,30 @@ class LeaveStore {
         ]
       );
       return convertedResults;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Stat Count
+  async getStatCount(startDate, endDate, reviewer) {
+    try {
+      const result = await this.db(this.table)
+        .select(
+          this.db.raw(
+            "COUNT(CASE WHEN processing = ? THEN 1 END) AS pending_count",
+            [reviewer]
+          ),
+          this.db.raw(
+            'COUNT(CASE WHEN status = "Approved" THEN 1 END) AS approved_count'
+          ),
+          this.db.raw(
+            'COUNT(CASE WHEN status = "Rejected" THEN 1 END) AS rejected_count'
+          )
+        )
+        .whereBetween("date", [startDate, endDate]);
+
+      return result[0];
     } catch (error) {
       throw error;
     }
@@ -85,20 +117,6 @@ class LeaveStore {
     }
   }
 
-  // Stat Count
-  async getStatCount(toCount, startDate, endDate) {
-    try {
-      const result = await this.db(this.table)
-        .count()
-        .where(this.cols.status, "like", `%${toCount}%`)
-        .whereBetween("date", [startDate, endDate]);
-      const statCount = result[0]["count(*)"] || 0;
-      return statCount;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   // UPDATE
   async update(body) {
     try {
@@ -118,7 +136,7 @@ class LeaveStore {
           reason: body?.reason,
           decision: body?.decision,
           status: body?.status,
-          remarks: body?.remarks,
+          response: body?.response,
           processing: body?.processing,
           reviewed_by: body?.reviewed_by,
         })

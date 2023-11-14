@@ -1,5 +1,6 @@
 const Store = require("./leave-store");
 const AttendanceStore = require("../attendance/attendance-store");
+const RoutingStore = require("../approvalRoute/approvalRoute-store");
 const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
@@ -8,12 +9,16 @@ class LeaveService {
   async add(req, res, next) {
     try {
       const current = new Date();
+      const routingStore = new RoutingStore(req.db);
       const attendanceStore = new AttendanceStore(req.db);
       const store = new Store(req.db);
       const body = req.body;
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
+      const routing = await routingStore.getData("leave");
+
+      body.processing = routing.boss1;
       const leaveDuration = Math.ceil(
         (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
       );
@@ -38,6 +43,7 @@ class LeaveService {
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
+      console.log(body);
       const result = await store.add(userId, body);
       res.status(201).json({
         success: true,
@@ -52,20 +58,15 @@ class LeaveService {
   async getData(req, res, next) {
     try {
       const store = new Store(req.db);
-      const { startDate, endDate } = req.query;
-      let table = [];
-      let pending = 0;
-      let progress = 0;
-      let approved = 0;
-      let rejected = 0;
-      table = await store.getData(startDate, endDate);
-      pending = await store.getStatCount("Pending", startDate, endDate);
-      progress = await store.getStatCount("In Progress", startDate, endDate);
-      approved = await store.getStatCount("Approved", startDate, endDate);
-      rejected = await store.getStatCount("Rejected", startDate, endDate);
+      const { startDate, endDate, reviewer } = req.query;
+      const table = await store.getData(startDate, endDate, reviewer);
+      const stats = await store.getStatCount(startDate, endDate, reviewer);
+      const pending = stats.pending_count;
+      const approved = stats.approved_count;
+      const rejected = stats.rejected_count;
       return res.status(200).send({
         success: true,
-        data: { table, pending, progress, approved, rejected },
+        data: { table, pending, approved, rejected },
       });
     } catch (err) {
       next(err);
@@ -92,6 +93,9 @@ class LeaveService {
     try {
       const store = new Store(req.db);
       const body = req.body;
+      if (body.status === "Approved") {
+        body.status = "Pending";
+      }
       const result = await store.update(body);
       if (result === 0) {
         throw new NotFoundError("ID not found");
@@ -215,6 +219,5 @@ function getTimeDifference(startTime, endTime) {
   const seconds = Math.floor((timeDifferenceMs % (60 * 1000)) / 1000);
   return `${hours}:${minutes}:${seconds}`;
 }
-
 
 module.exports = LeaveService;
