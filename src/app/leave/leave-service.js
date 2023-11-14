@@ -17,7 +17,11 @@ class LeaveService {
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
       const routing = await routingStore.getData("leave");
-
+      if (routing === undefined) {
+        throw new NotFoundError(
+          `Leave approval routing not found, please contact the admin to set it up.`
+        );
+      }
       body.processing = routing.boss1;
       const leaveDuration = Math.ceil(
         (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1

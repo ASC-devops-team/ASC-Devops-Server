@@ -173,7 +173,7 @@ class UserService {
       const qrCode = req.query.qr_code;
       const result = await store.getUserByQR(qrCode);
       if (!result) {
-        throw new NotFoundError("Resource not found, QR code not registered.");
+        throw new NotFoundError("QR code not found, please register your QR code and fingerprint first.");
       }
       return res.status(200).send({
         success: true,
