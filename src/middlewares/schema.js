@@ -89,6 +89,7 @@ const userDao =
             table.integer("sl").nullable().defaultTo(15);
             table.integer("vl").nullable().defaultTo(15);
             table.integer("used_leaves").nullable().defaultTo(0);
+            table.date("validity").notNullable();
             table
               .integer("user_id")
               .unsigned()
