@@ -63,7 +63,7 @@ class LeaveService {
       const routingStore = new RoutingStore(req.db);
       const store = new Store(req.db);
       const { startDate, endDate, reviewer } = req.query;
-      const { boss1 } = await routingStore.getData("leave");
+      const { boss1 } = (await routingStore.getData("leave")) ?? {};
       if (boss1 === undefined) {
         throw new NotFoundError(
           `Leave approval routing not found, please contact the admin to set it up.`
@@ -110,6 +110,7 @@ class LeaveService {
       const store = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
       const body = req.body;
+      console.log(body);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
@@ -123,9 +124,13 @@ class LeaveService {
           body.processing = routing.boss4;
         }
         body.status = "Pending";
-      } else {
+      } else if (
+        body.status === "Approved" &&
+        body.reviewed_by === routing.final_boss
+      ) {
         body.processing = null;
       }
+
       const result = await store.update(body);
       if (result === 0) {
         throw new NotFoundError("ID not found");

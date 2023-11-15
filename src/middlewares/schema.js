@@ -442,6 +442,7 @@ const userDao =
             philhealth: "243532652",
             emergency_contact_person: "09255233919",
             emergency_contact_number: "09255233919",
+            avatar: "soldier",
           },
           {
             email: "ian.salita@asc.com.ph",
@@ -465,6 +466,7 @@ const userDao =
             philhealth: "243532652",
             emergency_contact_person: "09255233919",
             emergency_contact_number: "09255233919",
+            avatar: "rider",
           },
           {
             email: "johnpaul.miraflores@asc.com.ph",
@@ -488,6 +490,7 @@ const userDao =
             philhealth: "243532652",
             emergency_contact_person: "09255233919",
             emergency_contact_number: "09255233919",
+            avatar: "baby",
           },
         ]);
       } catch (error) {
