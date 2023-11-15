@@ -35,16 +35,20 @@ class LeaveStore {
   }
 
   // Get Table data
-  async getData(startDate, endDate, reviewer) {
+  async getData(startDate, endDate, reviewer, boss1) {
     try {
       let query = this.db(this.table)
         .select()
         .where(function () {
-          this.where("processing", reviewer)
-            .orWhere("status", "=", "Approved")
-            .orWhere("status", "=", "Rejected")
-            .orWhere("status", "=", "Withdrawn");
+          if (reviewer == boss1) {
+            this.where("status", "=", "Pending");
+          } else {
+            this.where("processing", "=", reviewer);
+          }
         })
+        .orWhere("status", "=", "Approved")
+        .orWhere("status", "=", "Rejected")
+        .orWhere("status", "=", "Withdrawn")
         .orderBy(this.cols.id, "desc");
       if (startDate && endDate) {
         query = query.whereBetween(this.cols.date, [startDate, endDate]);

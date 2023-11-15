@@ -57,19 +57,26 @@ class LeaveService {
     }
   }
 
-  // Get Table Data
+  // Get Table Data ( reviewer means user id)
   async getData(req, res, next) {
     try {
+      const routingStore = new RoutingStore(req.db);
       const store = new Store(req.db);
       const { startDate, endDate, reviewer } = req.query;
-      const table = await store.getData(startDate, endDate, reviewer);
+      const { boss1 } = await routingStore.getData("leave");
+      if (boss1 === undefined) {
+        throw new NotFoundError(
+          `Leave approval routing not found, please contact the admin to set it up.`
+        );
+      }
+      const table = await store.getData(startDate, endDate, reviewer, boss1);
       const stats = await store.getStatCount(startDate, endDate, reviewer);
       const pending = stats.pending_count;
       const approved = stats.approved_count;
       const rejected = stats.rejected_count;
       return res.status(200).send({
         success: true,
-        data: { table, pending, approved, rejected },
+        data: { table, pending, approved, rejected, boss1 },
       });
     } catch (err) {
       next(err);
