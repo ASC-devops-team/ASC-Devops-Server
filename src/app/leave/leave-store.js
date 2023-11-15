@@ -38,17 +38,27 @@ class LeaveStore {
   async getData(startDate, endDate, reviewer, boss1) {
     try {
       let query = this.db(this.table)
-        .select()
+        .select(
+          "leave.*",
+          this.db.raw(
+            "CONCAT(users.firstname, ' ', users.lastname) AS processor_name"
+          ),
+          this.db.raw(
+            "CONCAT(reviewers.firstname, ' ', reviewers.lastname) AS reviewer_name"
+          )
+        )
+        .leftJoin("users", "leave.processing", "users.uuid")
+        .leftJoin("users as reviewers", "leave.reviewed_by", "reviewers.uuid")
         .where(function () {
           if (reviewer == boss1) {
-            this.where("status", "=", "Pending");
+            this.where("leave.status", "=", "Pending");
           } else {
-            this.where("processing", "=", reviewer);
+            this.where("leave.processing", "=", reviewer);
           }
         })
-        .orWhere("status", "=", "Approved")
-        .orWhere("status", "=", "Rejected")
-        .orWhere("status", "=", "Withdrawn")
+        .orWhere("leave.status", "=", "Approved")
+        .orWhere("leave.status", "=", "Rejected")
+        .orWhere("leave.status", "=", "Withdrawn")
         .orderBy(this.cols.id, "desc");
       if (startDate && endDate) {
         query = query.whereBetween(this.cols.date, [startDate, endDate]);
@@ -79,6 +89,10 @@ class LeaveStore {
         .select(
           this.db.raw(
             'COUNT(CASE WHEN processing = ? AND status = "Pending" THEN 1 END) AS pending_count',
+            [reviewer]
+          ),
+          this.db.raw(
+            'COUNT(CASE WHEN processing != ? AND status = "Pending" THEN 1 END) AS in_progress_count',
             [reviewer]
           ),
           this.db.raw(
