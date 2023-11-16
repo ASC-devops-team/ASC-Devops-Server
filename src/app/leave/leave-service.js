@@ -110,7 +110,6 @@ class LeaveService {
       const store = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
       const body = req.body;
-      console.log(body);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
