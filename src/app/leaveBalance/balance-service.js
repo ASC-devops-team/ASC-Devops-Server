@@ -14,9 +14,9 @@ class BalanceService {
         validity: lastDayOfYear,
         user_id: userId,
       };
-      let result = [];
-      result = await balanceStore.getBalance(userId);
-      if (result.length === 0) {
+      let result = 0;
+      result = await balanceStore.getBalance(userId, lastDayOfYear);
+      if (!result) {
         result = await balanceStore.add(data);
       }
       return res.status(200).send({

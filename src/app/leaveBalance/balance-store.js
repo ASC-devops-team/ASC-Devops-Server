@@ -8,32 +8,28 @@ class BalanceStore {
   // CREATE
   async add(body) {
     try {
-      // Perform the insert operation
       const [uuid] = await this.db("leave_balance")
         .insert({
           validity: body?.validity,
           user_id: body?.user_id,
         })
-        .onConflict("user_id")
+        .onConflict("validity")
         .merge();
-      // Retrieve the inserted data using the inserted ID
       const result = await this.db("leave_balance").where("uuid", uuid).first();
-
       return result;
     } catch (error) {
       throw error;
     }
   }
 
-  async getBalance(userId) {
+  async getBalance(userId, lastDayOfYear) {
     try {
-      const query = this.db("leave_balance").select().where("user_id", userId);
+      const query = this.db("leave_balance")
+        .select()
+        .where("user_id", userId)
+        .andWhere("validity", lastDayOfYear).first();
       const results = await query;
-      const convertedResults = convertDatesToTimezone(
-        results.map((row) => row),
-        ["validity"]
-      );
-      return convertedResults;
+      return results;
     } catch (error) {
       throw error;
     }
