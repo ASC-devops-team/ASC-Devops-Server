@@ -16,6 +16,9 @@ class LeaveService {
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
+      const leaveDuration = Math.ceil(
+        (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
+      );
       const routing = await routingStore.getData("leave");
       if (routing === undefined) {
         throw new NotFoundError(
@@ -23,9 +26,13 @@ class LeaveService {
         );
       }
       body.processing = routing.boss1;
-      const leaveDuration = Math.ceil(
-        (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
-      );
+
+      if (body.day_type === "Full") {
+        body.duration = leaveDuration;
+      } else {
+        body.duration = leaveDuration / 2;
+      }
+
       if (
         body.leave_type === "VL" ||
         body.leave_type === "SL" ||
@@ -41,7 +48,6 @@ class LeaveService {
           );
         }
         body.date = current;
-        body.duration = leaveDuration;
         body.vl_balance = body.leave_type === "VL" ? leaveCount : 0;
         body.sl_balance = body.leave_type === "SL" ? leaveCount : 0;
       } else {
