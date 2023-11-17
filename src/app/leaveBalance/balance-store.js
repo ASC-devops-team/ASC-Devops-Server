@@ -27,7 +27,8 @@ class BalanceStore {
       const query = this.db("leave_balance")
         .select()
         .where("user_id", userId)
-        .andWhere("validity", lastDayOfYear).first();
+        .andWhere("validity", lastDayOfYear)
+        .first();
       const results = await query;
       return results;
     } catch (error) {
@@ -36,29 +37,18 @@ class BalanceStore {
   }
 
   // UPDATE
-  async update(body) {
+  async updateBalance(body) {
     try {
-      const result = await this.db(this.table)
+      const result = await this.db("leave_balance")
         .update({
-          name: body?.name,
-          date: body?.date,
-          leave_type: body?.leave_type,
-          day_type: body?.day_type,
-          date_from: body?.date_from,
-          date_to: body?.date_to,
-          date_approved: body?.date_approved,
-          date_rejected: body?.date_rejected,
-          duration: body?.duration,
-          vl_balance: body?.vl_balance,
-          sl_balance: body?.sl_balance,
-          reason: body?.reason,
-          decision: body?.decision,
-          status: body?.status,
-          response: body?.response,
-          processing: body?.processing,
-          reviewed_by: body?.reviewed_by,
+          sl: body?.sl,
+          vl: body?.vl,
+          used_leaves: body?.used_leaves,
+          validity: body?.validity,
+          user_id: body?.user_id,
         })
-        .where(this.cols.id, body?.uuid);
+        .where("user_id", body?.user_id)
+        .andWhere("validity", body?.validity);
       return result;
     } catch (error) {
       throw error;

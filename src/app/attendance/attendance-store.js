@@ -137,22 +137,6 @@ class AttendanceStore {
   //   }
   // }
 
-  // GET Leave Balance
-  async getLeaveCountByUserId(userId, leaveType) {
-    try {
-      const currentYear = new Date().getFullYear(); // Get the year from the current date
-      const result = await this.db(this.table)
-        .count()
-        .where(this.cols.userid, userId)
-        .andWhere(this.cols.status, leaveType)
-        .whereRaw(`YEAR(${this.cols.date}) = ${currentYear}`);
-      const leaveCount = result[0]["count(*)"] || 0;
-      return leaveCount;
-    } catch (error) {
-      throw error; // Instead of using reject, you can throw the error for cleaner async/await handling
-    }
-  }
-
   // UPDATE ATTENDANCE DTR
   async update(body) {
     try {

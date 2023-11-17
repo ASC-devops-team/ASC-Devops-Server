@@ -1,6 +1,7 @@
 const Store = require("./leave-store");
 const AttendanceStore = require("../attendance/attendance-store");
 const RoutingStore = require("../approvalRoute/approvalRoute-store");
+const BalanceStore = require("../leaveBalance/balance-store");
 const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
@@ -11,45 +12,35 @@ class LeaveService {
       const current = new Date();
       const routingStore = new RoutingStore(req.db);
       const attendanceStore = new AttendanceStore(req.db);
+      const { vl, sl } = new BalanceStore(req.db);
       const store = new Store(req.db);
       const body = req.body;
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
-      const leaveDuration = Math.ceil(
-        (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
-      );
+      let leaveDuration = 0;
       const routing = await routingStore.getData("leave");
       if (routing === undefined) {
         throw new NotFoundError(
           `Leave approval routing not found, please contact the admin to set it up.`
         );
       }
-      body.processing = routing.boss1;
-
       if (body.day_type === "Full") {
-        body.duration = leaveDuration;
-      } else {
-        body.duration = leaveDuration / 2;
-      }
-
-      if (
-        body.leave_type === "VL" ||
-        body.leave_type === "SL" ||
-        body.leave_type === "EL"
-      ) {
-        const leaveCount = await attendanceStore.getLeaveCountByUserId(
-          userId,
-          body.leave_type
+        leaveDuration = Math.ceil(
+          (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
         );
-        if (leaveCount >= 15) {
-          throw new BadRequestError(
-            `Reached the maximum ${body.leave_type} for this year`
-          );
-        }
-        body.date = current;
-        body.vl_balance = body.leave_type === "VL" ? leaveCount : 0;
-        body.sl_balance = body.leave_type === "SL" ? leaveCount : 0;
+      } else {
+        leaveDuration = Math.ceil(
+          ((dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1) / 2
+        );
+      }
+      body.date = current;
+      body.processing = routing.boss1;
+      body.duration = leaveDuration;
+      if (body.leave_type === "VL") {
+        body.vl_balance = vl;
+      } else if (body.leave_type === "SL") {
+        body.sl_balance = sl;
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
@@ -115,7 +106,10 @@ class LeaveService {
     try {
       const store = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
+      const balanceStore = new BalanceStore(req.db);
       const body = req.body;
+      const current = new Date();
+      const lastDayOfYear = new Date(current.getFullYear(), 11, 31);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
@@ -134,6 +128,17 @@ class LeaveService {
         body.reviewed_by === routing.final_boss
       ) {
         body.processing = null;
+        const balance = await balanceStore.getBalance(
+          body.user_id,
+          lastDayOfYear
+        );
+        if (body.leave_type === "SL") {
+          balance.sl -= body.duration;
+        }
+        if (body.leave_type === "VL") {
+          balance.vl -= body.duration;
+        }
+        await balanceStore.updateBalance(balance);
       }
 
       const result = await store.update(body);

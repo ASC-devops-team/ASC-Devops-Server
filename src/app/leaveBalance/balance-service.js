@@ -27,35 +27,6 @@ class BalanceService {
       next(err);
     }
   }
-
-  // Update user
-  async update(req, res, next) {
-    try {
-      const balanceStore = new BalanceStore(req.db);
-      const body = req.body;
-      let result = [];
-      result = await balanceStore.getBalance(body.user_id);
-      if (result === 0) {
-        throw new NotFoundError("Resource not found");
-      }
-      if (body.type === "SL") {
-        result.sl--;
-        result.used_leaves++;
-      }
-      if (body.type === "VL") {
-        result.vl--;
-        result.used_leaves++;
-      }
-
-      return res.status(200).send({
-        success: true,
-        message: "Successfully Updated",
-        data: result,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
 }
 
 module.exports = BalanceService;

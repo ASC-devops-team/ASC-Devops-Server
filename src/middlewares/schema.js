@@ -86,9 +86,9 @@ const userDao =
 
           .createTable("leave_balance", (table) => {
             table.increments("uuid").primary();
-            table.integer("sl").nullable().defaultTo(15);
-            table.integer("vl").nullable().defaultTo(15);
-            table.integer("used_leaves").nullable().defaultTo(0);
+            table.double("sl").nullable().defaultTo(15);
+            table.double("vl").nullable().defaultTo(15);
+            table.double("used_leaves").nullable().defaultTo(0);
             table.date("validity").notNullable();
             table
               .integer("user_id")
@@ -106,13 +106,14 @@ const userDao =
             table.date("date").notNullable();
             table.string("leave_type").notNullable();
             table.string("day_type").notNullable();
+            table.string("payment_type").notNullable();
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
             table.date("date_approved").nullable();
             table.date("date_rejected").nullable();
             table.double("duration").notNullable();
-            table.integer("vl_balance").notNullable();
-            table.integer("sl_balance").notNullable();
+            table.double("vl_balance").notNullable();
+            table.double("sl_balance").notNullable();
             table.text("reason").notNullable();
             table.text("decision").nullable(); // if 1 decline = rejected
             table.string("status").notNullable().defaultTo("Pending");
