@@ -5,15 +5,16 @@ const BalanceStore = require("../leaveBalance/balance-store");
 const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
+const current = new Date();
+const lastDayOfYear = new Date(current.getFullYear(), 11, 31);
+
 class LeaveService {
   // Submit Leave
   async add(req, res, next) {
     try {
-      const current = new Date();
+      const leaveStore = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
-      const attendanceStore = new AttendanceStore(req.db);
-      const { vl, sl } = new BalanceStore(req.db);
-      const store = new Store(req.db);
+      const balanceStore = new BalanceStore(req.db);
       const body = req.body;
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
@@ -25,6 +26,7 @@ class LeaveService {
           `Leave approval routing not found, please contact the admin to set it up.`
         );
       }
+      const { vl, sl } = await balanceStore.getBalance(userId, lastDayOfYear);
       if (body.day_type === "Full") {
         leaveDuration = Math.ceil(
           (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
@@ -34,17 +36,21 @@ class LeaveService {
           ((dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1) / 2
         );
       }
+
       body.date = current;
       body.processing = routing.boss1;
       body.duration = leaveDuration;
-      if (body.leave_type === "VL") {
-        body.vl_balance = vl;
-      } else if (body.leave_type === "SL") {
-        body.sl_balance = sl;
+      body.vl_balance = vl;
+      body.sl_balance = sl;
+      if (
+        body.leave_type === "VL" ||
+        body.leave_type === "SL" ||
+        body.leave_type === "EL"
+      ) {
       } else {
         throw new BadRequestError("Invalid leave type.");
       }
-      const result = await store.add(userId, body);
+      const result = await leaveStore.add(userId, body);
       res.status(201).json({
         success: true,
         data: result,
@@ -108,8 +114,6 @@ class LeaveService {
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
       const body = req.body;
-      const current = new Date();
-      const lastDayOfYear = new Date(current.getFullYear(), 11, 31);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
@@ -132,20 +136,22 @@ class LeaveService {
           body.user_id,
           lastDayOfYear
         );
-        if (body.leave_type === "SL") {
+        if (body.leave_type === "SL" && balance.sl) {
           balance.sl -= body.duration;
+          balance.used_leaves += body.duration;
+          body.sl_balance = balance.sl;
         }
-        if (body.leave_type === "VL") {
+        if (body.leave_type === "VL" && balance.vl) {
           balance.vl -= body.duration;
+          balance.used_leaves += body.duration;
+          body.vl_balance = balance.vl;
         }
         await balanceStore.updateBalance(balance);
       }
-
       const result = await store.update(body);
       if (result === 0) {
         throw new NotFoundError("ID not found");
       }
-
       return res.status(200).send({
         success: true,
         message: "Successfully Updated",

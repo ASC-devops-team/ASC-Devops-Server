@@ -106,7 +106,7 @@ const userDao =
             table.date("date").notNullable();
             table.string("leave_type").notNullable();
             table.string("day_type").notNullable();
-            table.string("payment_type").notNullable();
+            table.string("payment_type").notNullable().defaultTo("Unpaid");
             table.date("date_from").notNullable();
             table.date("date_to").notNullable();
             table.date("date_approved").nullable();
