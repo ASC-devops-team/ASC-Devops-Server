@@ -19,38 +19,38 @@ class LeaveService {
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
       const dateTo = new Date(body.date_to);
-      let leaveDuration = 0;
       const routing = await routingStore.getData("leave");
       if (routing === undefined) {
         throw new NotFoundError(
           `Leave approval routing not found, please contact the admin to set it up.`
         );
       }
-      const { vl, sl } = await balanceStore.getBalance(userId, lastDayOfYear);
       if (body.day_type === "Full") {
-        leaveDuration = Math.ceil(
+        body.duration = Math.ceil(
           (dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1
         );
       } else {
-        leaveDuration = Math.ceil(
-          ((dateTo - dateFrom) / (1000 * 60 * 60 * 24) + 1) / 2
-        );
+        body.duration = 0.5;
       }
 
       body.date = current;
       body.processing = routing.boss1;
-      body.duration = leaveDuration;
-      body.vl_balance = vl;
-      body.sl_balance = sl;
-      if (
-        body.leave_type === "VL" ||
-        body.leave_type === "SL" ||
-        body.leave_type === "EL"
-      ) {
-      } else {
-        throw new BadRequestError("Invalid leave type.");
+
+      const balance = await balanceStore.getBalance(userId, lastDayOfYear);
+      body.sl_balance = balance.sl;
+      body.vl_balance = balance.vl;
+      if (body.leave_type === "SL" && balance.sl) {
+        balance.sl -= body.duration;
+        balance.used_leaves += body.duration;
+        body.payment_type = "Paid";
+      }
+      if (body.leave_type === "VL" && balance.vl) {
+        balance.vl -= body.duration;
+        balance.used_leaves += body.duration;
+        body.payment_type = "Paid";
       }
       const result = await leaveStore.add(userId, body);
+      await balanceStore.updateBalance(balance);
       res.status(201).json({
         success: true,
         data: result,
@@ -114,6 +114,7 @@ class LeaveService {
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
       const body = req.body;
+      console.log(body);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
@@ -132,19 +133,18 @@ class LeaveService {
         body.reviewed_by === routing.final_boss
       ) {
         body.processing = null;
+      } else {
         const balance = await balanceStore.getBalance(
           body.user_id,
           lastDayOfYear
         );
         if (body.leave_type === "SL" && balance.sl) {
-          balance.sl -= body.duration;
-          balance.used_leaves += body.duration;
-          body.sl_balance = balance.sl;
+          balance.sl += body.duration;
+          balance.used_leaves -= body.duration;
         }
         if (body.leave_type === "VL" && balance.vl) {
-          balance.vl -= body.duration;
-          balance.used_leaves += body.duration;
-          body.vl_balance = balance.vl;
+          balance.vl += body.duration;
+          balance.used_leaves -= body.duration;
         }
         await balanceStore.updateBalance(balance);
       }

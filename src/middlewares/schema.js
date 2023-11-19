@@ -105,6 +105,7 @@ const userDao =
             table.string("name").notNullable();
             table.date("date").notNullable();
             table.string("leave_type").notNullable();
+            table.integer("is_emergency").notNullable().defaultTo(0);
             table.string("day_type").notNullable();
             table.string("payment_type").notNullable().defaultTo("Unpaid");
             table.date("date_from").notNullable();
@@ -115,7 +116,6 @@ const userDao =
             table.double("vl_balance").notNullable();
             table.double("sl_balance").notNullable();
             table.text("reason").notNullable();
-            table.text("decision").nullable(); // if 1 decline = rejected
             table.string("status").notNullable().defaultTo("Pending");
             table.text("response").nullable();
             table
