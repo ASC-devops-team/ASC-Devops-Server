@@ -58,6 +58,7 @@ const userDao =
             table.time("undertime").nullable();
             table.time("overtime").nullable();
             table.time("total_work_hours").nullable();
+            table.string("ot_status").nullable();
             table.string("status").nullable();
             table
               .integer("user_id")

@@ -7,7 +7,7 @@ const delayMiddleware = (req, res, next) => {
 };
 
 // Apply the delay middleware before other routes
-router.use(delayMiddleware);
+// router.use(delayMiddleware);
 
 router.use(require("./users/_rest"));
 router.use(require("./download/_rest"));
