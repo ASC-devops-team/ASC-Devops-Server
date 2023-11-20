@@ -2,6 +2,12 @@ const express = require("express");
 const router = express.Router();
 const { errorHandler } = require("../middlewares/errors");
 
+const delayMiddleware = (req, res, next) => {
+  setTimeout(next, 1000); // 1000 milliseconds = 1 second
+};
+
+// Apply the delay middleware before other routes
+router.use(delayMiddleware);
 
 router.use(require("./users/_rest"));
 router.use(require("./download/_rest"));
