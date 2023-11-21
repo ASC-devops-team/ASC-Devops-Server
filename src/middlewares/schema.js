@@ -186,6 +186,8 @@ const userDao =
             table.increments("uuid").primary();
             table.string("title").notNullable();
             table.date("date").notNullable();
+            table.datetime("start").nullable();
+            table.datetime("end").nullable();
             table.boolean("allDay").notNullable().defaultTo(false);
             table.string("type").nullable();
             table.timestamps(true, true);
