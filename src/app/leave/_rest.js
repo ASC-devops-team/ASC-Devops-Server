@@ -10,7 +10,7 @@ const service = new Service();
 const router = express.Router();
 
 // CREATE
-router.post("/leave", db, uploadFile, asyncHandler(service.add));
+router.post("/leave", db, asyncHandler(service.add));
 
 // READS
 router.get("/leave/get", db, asyncHandler(service.getData));

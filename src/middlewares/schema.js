@@ -41,7 +41,7 @@ const userDao =
             table.string("avatar").notNullable().defaultTo("default");
             table.string("qr_code").nullable();
             table.string("fingerprint").nullable();
-            table.integer("status").notNullable().defaultTo(1);
+            table.boolean("status").notNullable().defaultTo(true);
             table.string("refresh_token").nullable();
             table.timestamps(true, true);
             table.index("qr_code");
@@ -106,7 +106,7 @@ const userDao =
             table.string("name").notNullable();
             table.date("date").notNullable();
             table.string("leave_type").notNullable();
-            table.integer("is_emergency").notNullable().defaultTo(0);
+            table.boolean("is_emergency").notNullable().defaultTo(false);
             table.string("day_type").notNullable();
             table.string("payment_type").notNullable().defaultTo("Unpaid");
             table.date("date_from").notNullable();
@@ -180,6 +180,22 @@ const userDao =
               .inTable("users")
               .onDelete("CASCADE");
             table.index("name");
+          })
+
+          .createTable("events", (table) => {
+            table.increments("uuid").primary();
+            table.string("title").notNullable();
+            table.date("date").notNullable();
+            table.boolean("allDay").notNullable().defaultTo(false);
+            table.string("type").nullable();
+            table.timestamps(true, true);
+            table
+              .integer("user_id")
+              .unsigned()
+              .notNullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
           })
 
           .createTable("logs", (table) => {
