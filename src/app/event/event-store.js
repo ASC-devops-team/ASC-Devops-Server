@@ -13,9 +13,11 @@ class EventStore {
     try {
       const result = await this.db("events").insert({
         title: body?.title,
-        date: body?.date,
+        start: body?.start,
+        end: body?.end,
         allDay: body?.allDay,
         type: body?.type,
+        notes: body?.notes,
         user_id: body?.user_id,
       });
       return result;
