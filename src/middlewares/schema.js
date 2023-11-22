@@ -185,8 +185,8 @@ const userDao =
           .createTable("events", (table) => {
             table.increments("uuid").primary();
             table.string("title").notNullable();
-            table.datetime("start").nullable();
-            table.datetime("end").nullable();
+            table.timestamp("start").nullable();
+            table.timestamp("end").nullable();
             table.boolean("allDay").notNullable().defaultTo(false);
             table.string("type").nullable();
             table.text("notes").nullable();
