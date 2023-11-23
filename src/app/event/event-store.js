@@ -29,11 +29,11 @@ class EventStore {
   // Get Table data
   async getData() {
     try {
-      let query = this.db("events").select();
+      let query = this.db("events").select().orderBy("start", "desc");
       const results = await query;
       const convertedResults = convertDatesToTimezone(
         results.map((row) => row),
-        ["date", "created_at", "updated_at"]
+        ["created_at", "updated_at"]
       );
       return convertedResults;
     } catch (error) {
