@@ -12,7 +12,7 @@ async function connectToDatabase() {
           port: 3306,
           user: "root",
           password: password,
-          database: "ascportal",
+          database: "employee_portal_of_asc",
         },
         pool: {
           min: 1, // Minimum number of connections
