@@ -1,4 +1,5 @@
 const Store = require("./attendance-store");
+const LeaveStore = require("../leave/leave-store");
 const Logs = require("../logs/logs-store");
 const {
   NotFoundError,
@@ -114,6 +115,7 @@ class AttendaceService {
   async getData(req, res, next) {
     try {
       const store = new Store(req.db);
+      const leaveStore = new LeaveStore(req.db);
       const { userId, startDate, endDate } = req.query;
       let table = [];
       let late = 0;
@@ -121,6 +123,12 @@ class AttendaceService {
       let present = 0;
       let undertime = 0;
       let absent = 0;
+
+      // Check leaves
+      const leaves = await leaveStore.getDataForAttendance(startDate, endDate);
+
+      console.log(leaves);
+
 
       table = await store.getData(userId, startDate, endDate);
       late = await store.getStatCount("Late", startDate, endDate);

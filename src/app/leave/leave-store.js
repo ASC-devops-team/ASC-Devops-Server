@@ -168,6 +168,39 @@ class LeaveStore {
     }
   }
 
+  async getDataForAttendance(startDate, endDate) {
+    try {
+      let query = this.db(this.table).select().orderBy(this.cols.id, "desc");
+      if (startDate && endDate) {
+        query = query.whereBetween(this.cols.date, [startDate, endDate]);
+      }
+      // Combine conditions using logical OR
+      query = query.where((builder) => {
+        builder
+          .where({ leave_type: "VL", status: "Approved" })
+          .orWhere({ leave_type: "SL", status: "Approved" })
+          .orWhere({ leave_type: "SL", status: "Pending" })
+          .orWhere({ is_emergency: true });
+      });
+      const results = await query;
+      const convertedResults = convertDatesToTimezone(
+        results.map((row) => row),
+        [
+          this.cols.date,
+          this.cols.createdAt,
+          this.cols.updatedAt,
+          this.cols.dateFrom,
+          this.cols.dateTo,
+          this.cols.dateApproved,
+          this.cols.dateRejected,
+        ]
+      );
+      return convertedResults;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // // READ
   // async getById(uuid) {
   //   const results = await this.db(this.table)
