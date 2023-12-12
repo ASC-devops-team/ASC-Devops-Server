@@ -129,7 +129,6 @@ class AttendaceService {
 
       console.log(leaves);
 
-
       table = await store.getData(userId, startDate, endDate);
       late = await store.getStatCount("Late", startDate, endDate);
       overtime = await store.getStatCount("Overtime", startDate, endDate);
