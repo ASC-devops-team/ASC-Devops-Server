@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const refreshToken = (req, res, next) => {
   const jwt = require("jsonwebtoken");
   const cookies = req.cookies;
