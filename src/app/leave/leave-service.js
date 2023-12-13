@@ -15,6 +15,7 @@ class LeaveService {
       const leaveStore = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
+      const attendanceStore = new AttendanceStore(req.db);
       const body = req.body;
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
@@ -51,6 +52,45 @@ class LeaveService {
       }
       const result = await leaveStore.add(userId, body);
       await balanceStore.updateBalance(balance);
+
+      // Calculate the number of days between dateFrom and dateTo
+      const numberOfDays = Math.ceil(
+        (dateTo - dateFrom) / (1000 * 60 * 60 * 24)
+      );
+
+      for (let i = 0; i <= numberOfDays; i++) {
+        const currentDate = new Date(dateFrom);
+        currentDate.setDate(dateFrom.getDate() + i);
+
+        // Format the date as 'YYYY-MM-DD'
+        const formattedDate = currentDate.toISOString().split("T")[0];
+
+        // Create a new body object for each date
+        const dateBody = {
+          ...body,
+          date: formattedDate, // Update the date property for each iteration
+        };
+
+        // Update attendance for each date
+        if (body.leave_type === "SL") {
+          await attendanceStore.clockin({
+            name: body.name,
+            date: formattedDate, // Pass the current date
+            setting: body.leave_type,
+            status: "On leave",
+            user_id: userId,
+            leave_id: result,
+          });
+        } else if (body.is_emergency === 1) {
+          await attendanceStore.clockin({
+            ...dateBody,
+            setting: "EL",
+            status: "On Leave",
+            user_id: userId,
+            leave_id: result,
+          });
+        }
+      }
       res.status(201).json({
         success: true,
         data: result,
@@ -113,8 +153,8 @@ class LeaveService {
       const store = new Store(req.db);
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
+      const attendanceStore = new AttendanceStore(req.db);
       const body = req.body;
-      console.log(body);
       const routing = await routingStore.getData("leave");
       if (
         body.status === "Approved" &&
@@ -147,6 +187,12 @@ class LeaveService {
           balance.used_leaves -= body.duration;
         }
         await balanceStore.updateBalance(balance);
+        // Check if the leave is canceled
+        if (body.status === "Withdrawn") {
+          // Delete attendance record for each date
+          console.log(body);
+          await attendanceStore.delete(body);
+        }
       }
       const result = await store.update(body);
       if (result === 0) {

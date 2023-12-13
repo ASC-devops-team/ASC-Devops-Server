@@ -47,30 +47,6 @@ const userDao =
             table.index("qr_code");
           })
 
-          .createTable("attendance", (table) => {
-            table.increments("uuid").primary();
-            table.string("name").notNullable();
-            table.date("date").notNullable();
-            table.string("setting").nullable();
-            table.time("clock_in").nullable();
-            table.time("clock_out").nullable();
-            table.time("late").nullable();
-            table.time("undertime").nullable();
-            table.time("overtime").nullable();
-            table.time("total_work_hours").nullable();
-            table.string("ot_status").nullable();
-            table.string("status").nullable();
-            table
-              .integer("user_id")
-              .unsigned()
-              .notNullable()
-              .references("uuid")
-              .inTable("users")
-              .onDelete("CASCADE");
-            table.index("date");
-            table.index("name");
-          })
-
           .createTable("approval_route", (table) => {
             table.increments("uuid").primary();
             table.string("name").notNullable().unique();
@@ -141,6 +117,37 @@ const userDao =
               .inTable("users")
               .onDelete("CASCADE");
             table.timestamps(true, true);
+          })
+
+          .createTable("attendance", (table) => {
+            table.increments("uuid").primary();
+            table.string("name").notNullable();
+            table.date("date").notNullable();
+            table.string("setting").nullable();
+            table.time("clock_in").nullable();
+            table.time("clock_out").nullable();
+            table.time("late").nullable();
+            table.time("undertime").nullable();
+            table.time("overtime").nullable();
+            table.time("total_work_hours").nullable();
+            table.string("ot_status").nullable();
+            table.string("status").nullable();
+            table
+              .integer("user_id")
+              .unsigned()
+              .notNullable()
+              .references("uuid")
+              .inTable("users")
+              .onDelete("CASCADE");
+            table
+              .integer("leave_id")
+              .unsigned()
+              .nullable()
+              .references("uuid")
+              .inTable("leave")
+              .onDelete("CASCADE");
+            table.index("date");
+            table.index("name");
           })
 
           .createTable("equipment", (table) => {

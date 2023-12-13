@@ -12,16 +12,17 @@ class AttendanceStore {
   async clockin(body) {
     try {
       const result = await this.db(this.table).insert({
-        date: body.date,
-        name: body.name,
-        setting: body.setting,
-        clock_in: body.clock_in,
-        clock_out: body.clock_out,
-        late: body.late,
-        undertime: body.undertime,
-        overtime: body.overtime,
-        status: body.status,
-        user_id: body.user_id,
+        date: body?.date,
+        name: body?.name,
+        setting: body?.setting,
+        clock_in: body?.clock_in,
+        clock_out: body?.clock_out,
+        late: body?.late,
+        undertime: body?.undertime,
+        overtime: body?.overtime,
+        status: body?.status,
+        user_id: body?.user_id,
+        leave_id: body?.leave_id,
       });
       return result;
     } catch (error) {
@@ -104,10 +105,12 @@ class AttendanceStore {
   // Stat Count
   async getStatCount(toCount, startDate, endDate) {
     try {
+      const currentDate = new Date();
       const result = await this.db(this.table)
         .count()
         .where(this.cols.status, "like", `%${toCount}%`)
-        .whereBetween("date", [startDate, endDate]);
+        .whereBetween("date", [startDate, endDate])
+        .where("date", "<=", currentDate.toISOString());
       const statCount = result[0]["count(*)"] || 0;
       return statCount;
     } catch (error) {
@@ -169,14 +172,17 @@ class AttendanceStore {
   // }
 
   // DELETE
-  // async delete(uuid) {
-  //   const deletedRows = await this.db(this.table)
-  //     .where(this.cols.id, uuid)
-  //     .select("*")
-  //     .first();
-  //   await this.db(this.table).where(this.cols.id, uuid).del();
-  //   return deletedRows;
-  // }
+  async delete(data) {
+    const deletedRows = await this.db(this.table)
+      .select()
+      .where("leave_id", data.uuid)
+      .andWhere(this.cols.userid, data.user_id);
+    await this.db(this.table)
+      .where("leave_id", data.uuid)
+      .andWhere(this.cols.userid, data.user_id)
+      .del();
+    return deletedRows;
+  }
 }
 
 function formatDate(dateString) {

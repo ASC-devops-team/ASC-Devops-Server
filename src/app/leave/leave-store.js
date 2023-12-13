@@ -30,7 +30,7 @@ class LeaveStore {
         reviewed_by: body?.reviewed_by,
         user_id: userId,
       });
-      return result;
+      return result[0];
     } catch (error) {
       throw error;
     }
@@ -163,39 +163,6 @@ class LeaveStore {
         })
         .where(this.cols.id, body?.uuid);
       return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getDataForAttendance(startDate, endDate) {
-    try {
-      let query = this.db(this.table).select().orderBy(this.cols.id, "desc");
-      if (startDate && endDate) {
-        query = query.whereBetween(this.cols.date, [startDate, endDate]);
-      }
-      // Combine conditions using logical OR
-      query = query.where((builder) => {
-        builder
-          .where({ leave_type: "VL", status: "Approved" })
-          .orWhere({ leave_type: "SL", status: "Approved" })
-          .orWhere({ leave_type: "SL", status: "Pending" })
-          .orWhere({ is_emergency: true });
-      });
-      const results = await query;
-      const convertedResults = convertDatesToTimezone(
-        results.map((row) => row),
-        [
-          this.cols.date,
-          this.cols.createdAt,
-          this.cols.updatedAt,
-          this.cols.dateFrom,
-          this.cols.dateTo,
-          this.cols.dateApproved,
-          this.cols.dateRejected,
-        ]
-      );
-      return convertedResults;
     } catch (error) {
       throw error;
     }
