@@ -156,6 +156,7 @@ class LeaveService {
       const attendanceStore = new AttendanceStore(req.db);
       const body = req.body;
       const routing = await routingStore.getData("leave");
+      // If still in progress
       if (
         body.status === "Approved" &&
         body.reviewed_by !== routing.final_boss
