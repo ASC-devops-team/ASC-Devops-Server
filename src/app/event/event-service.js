@@ -1,5 +1,4 @@
 const EventStore = require("./event-store");
-const LeaveStore = require("../leave/leave-store");
 const Logs = require("../logs/logs-store");
 const { NotFoundError, BadRequestError } = require("../../middlewares/errors");
 
@@ -8,7 +7,6 @@ class EventService {
   async add(req, res, next) {
     try {
       const eventStore = new EventStore(req.db);
-      const leaveStore = new LeaveStore(req.db);
       const body = req.body;
       const result = await eventStore.add(body);
       res.status(201).json({
@@ -24,7 +22,6 @@ class EventService {
   async getData(req, res, next) {
     try {
       const eventStore = new EventStore(req.db);
-      const leaveStore = new LeaveStore(req.db);
       const result = await eventStore.getData();
       return res.status(200).send({
         success: true,
@@ -39,7 +36,6 @@ class EventService {
   async delete(req, res, next) {
     try {
       const eventStore = new EventStore(req.db);
-      const leaveStore = new LeaveStore(req.db);
       const uuid = req.params.uuid;
       //const userId = req.auth.id; // Get user ID using auth
       const result = await eventStore.delete(uuid);

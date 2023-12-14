@@ -173,15 +173,20 @@ class AttendanceStore {
 
   // DELETE
   async delete(data) {
-    const deletedRows = await this.db(this.table)
-      .select()
-      .where("leave_id", data.uuid)
-      .andWhere(this.cols.userid, data.user_id);
-    await this.db(this.table)
-      .where("leave_id", data.uuid)
-      .andWhere(this.cols.userid, data.user_id)
-      .del();
-    return deletedRows;
+    try {
+      const deletedRows = await this.db(this.table)
+        .select()
+        .where("leave_id", data.uuid)
+        .andWhere(this.cols.userid, data.user_id);
+      await this.db(this.table)
+        .where("leave_id", data.uuid)
+        .andWhere(this.cols.userid, data.user_id)
+        .del();
+      return deletedRows;
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      throw error; // Re-throw the error to be handled by the calling code
+    }
   }
 }
 

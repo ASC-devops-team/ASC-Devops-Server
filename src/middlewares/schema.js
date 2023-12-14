@@ -205,6 +205,13 @@ const userDao =
               .references("uuid")
               .inTable("users")
               .onDelete("CASCADE");
+            table
+              .integer("leave_id")
+              .unsigned()
+              .nullable()
+              .references("uuid")
+              .inTable("leave")
+              .onDelete("CASCADE");
           })
 
           .createTable("logs", (table) => {

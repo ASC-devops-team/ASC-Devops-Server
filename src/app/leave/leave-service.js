@@ -1,5 +1,6 @@
 const Store = require("./leave-store");
 const AttendanceStore = require("../attendance/attendance-store");
+const EventStore = require("../event/event-store");
 const RoutingStore = require("../approvalRoute/approvalRoute-store");
 const BalanceStore = require("../leaveBalance/balance-store");
 const Logs = require("../logs/logs-store");
@@ -16,6 +17,7 @@ class LeaveService {
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
       const attendanceStore = new AttendanceStore(req.db);
+      const eventStore = new EventStore(req.db);
       const body = req.body;
       const userId = req.query.userId;
       const dateFrom = new Date(body.date_from);
@@ -72,7 +74,24 @@ class LeaveService {
         };
 
         // Update attendance for each date
-        if (body.leave_type === "SL") {
+        if (body.is_emergency === 1) {
+          await attendanceStore.clockin({
+            name: body.name,
+            date: formattedDate, // Pass the current date
+            setting: "EL",
+            status: "On Leave",
+            user_id: userId,
+            leave_id: result,
+          });
+          await eventStore.add({
+            title: body.name,
+            start: formattedDate,
+            allDay: true,
+            type: "EL",
+            user_id: userId,
+            leave_id: result,
+          });
+        } else if (body.leave_type === "SL") {
           await attendanceStore.clockin({
             name: body.name,
             date: formattedDate, // Pass the current date
@@ -81,11 +100,11 @@ class LeaveService {
             user_id: userId,
             leave_id: result,
           });
-        } else if (body.is_emergency === 1) {
-          await attendanceStore.clockin({
-            ...dateBody,
-            setting: "EL",
-            status: "On Leave",
+          await eventStore.add({
+            title: body.name,
+            start: formattedDate,
+            allDay: true,
+            type: body.leave_type,
             user_id: userId,
             leave_id: result,
           });
@@ -154,7 +173,10 @@ class LeaveService {
       const routingStore = new RoutingStore(req.db);
       const balanceStore = new BalanceStore(req.db);
       const attendanceStore = new AttendanceStore(req.db);
+      const eventStore = new EventStore(req.db);
       const body = req.body;
+      const dateFrom = new Date(body.date_from);
+      const dateTo = new Date(body.date_to);
       const routing = await routingStore.getData("leave");
       // If still in progress
       if (
@@ -170,11 +192,51 @@ class LeaveService {
         }
         body.status = "Pending";
       } else if (
+        //If reached the final reviewer
         body.status === "Approved" &&
         body.reviewed_by === routing.final_boss
       ) {
         body.processing = null;
+        // Calculate the number of days between dateFrom and dateTo
+        const numberOfDays = Math.ceil(
+          (dateTo - dateFrom) / (1000 * 60 * 60 * 24)
+        );
+
+        for (let i = 0; i <= numberOfDays; i++) {
+          const currentDate = new Date(dateFrom);
+          currentDate.setDate(dateFrom.getDate() + i);
+
+          // Format the date as 'YYYY-MM-DD'
+          const formattedDate = currentDate.toISOString().split("T")[0];
+
+          // Create a new body object for each date
+          const dateBody = {
+            ...body,
+            date: formattedDate, // Update the date property for each iteration
+          };
+
+          // Update attendance for each date
+          if (body.leave_type === "VL") {
+            await attendanceStore.clockin({
+              name: body.name,
+              date: formattedDate, // Pass the current date
+              setting: body.leave_type,
+              status: "On leave",
+              user_id: body.user_id,
+              leave_id: body.uuid,
+            });
+            await eventStore.add({
+              title: body.name,
+              start: formattedDate,
+              allDay: true,
+              type: body.leave_type,
+              user_id: body.user_id,
+              leave_id: body.uuid,
+            });
+          }
+        }
       } else {
+        // if cancelled
         const balance = await balanceStore.getBalance(
           body.user_id,
           lastDayOfYear
@@ -187,13 +249,12 @@ class LeaveService {
           balance.vl += body.duration;
           balance.used_leaves -= body.duration;
         }
+        // Restore the leave balance
         await balanceStore.updateBalance(balance);
-        // Check if the leave is canceled
-        if (body.status === "Withdrawn") {
-          // Delete attendance record for each date
-          console.log(body);
-          await attendanceStore.delete(body);
-        }
+        // Delete the added attendance for leave
+        await attendanceStore.delete(body);
+        // Delete the added events for leave
+        await eventStore.deleteLeaveEvent(body);
       }
       const result = await store.update(body);
       if (result === 0) {
