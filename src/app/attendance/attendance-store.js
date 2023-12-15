@@ -37,6 +37,7 @@ class AttendanceStore {
         .select()
         .where(this.cols.userid, userId)
         .andWhere(this.cols.date, date)
+        .andWhereNot(this.cols.status, "On Leave")
         .first();
       if (result) {
         return result;
@@ -118,6 +119,57 @@ class AttendanceStore {
     }
   }
 
+  // Stat Count for OT approval
+  async getOTStatCount(toCount, startDate, endDate) {
+    try {
+      const currentDate = new Date();
+      const result = await this.db(this.table)
+        .count()
+        .where(this.cols.otStatus, "like", `%${toCount}%`)
+        .whereBetween("date", [startDate, endDate])
+        .where("date", "<=", currentDate.toISOString());
+      const statCount = result[0]["count(*)"] || 0;
+      return statCount;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  //GET OT for approval
+  async getOT(userId, startDate, endDate) {
+    try {
+      let query = this.db(this.table)
+        .select()
+        .whereNotNull(this.cols.otStatus)
+        .orderBy([
+          { column: "date", order: "desc" },
+          { column: "clock_in", order: "desc" },
+          { column: "clock_out", order: "desc" },
+        ]);
+      if (userId !== undefined && userId !== null && userId !== "") {
+        query.where("user_id", userId);
+      }
+      if (startDate && endDate) {
+        query.whereBetween("date", [startDate, endDate]);
+      }
+      const results = await query;
+      // Filter out data with dates beyond the current date
+      const currentDate = new Date();
+      const filteredResults = results.filter((row) => {
+        const rowDate = new Date(row.date);
+        return rowDate <= currentDate;
+      });
+      const convertedResults = convertDatesToTimezone(
+        filteredResults.map((row) => ({ ...row })),
+        [this.cols.date]
+      );
+      return convertedResults;
+    } catch (error) {
+      // Add more specific error handling if needed
+      throw error;
+    }
+  }
+
   // Count Absent
   // async getAbsent() {
   //   try {
@@ -154,6 +206,7 @@ class AttendanceStore {
           undertime: body.undertime,
           overtime: body.overtime,
           status: body.status,
+          ot_status: body.ot_status,
           user_id: body.user_id,
         })
         .where("uuid", body.uuid);

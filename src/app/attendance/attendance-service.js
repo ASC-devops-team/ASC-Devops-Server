@@ -86,7 +86,7 @@ class AttendaceService {
         lunchStart,
         lunchEnd
       );
-      let { status, undertime, overtime } = calculateStatusAndTimes(
+      let { status, undertime, overtime, otStatus } = calculateStatusAndTimes(
         userRole,
         currentTime,
         body.status,
@@ -98,6 +98,7 @@ class AttendaceService {
       body.overtime = overtime;
       body.work_hours = totalWorkHours;
       body.status = status;
+      body.ot_status = otStatus;
       const result = await store.clockout(body);
       if (result === 0) {
         throw new NotFoundError("Data Not Found");
@@ -157,6 +158,29 @@ class AttendaceService {
       return res.status(200).send({
         success: true,
         data: body,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // GET OT
+  async getOT(req, res, next) {
+    try {
+      const store = new Store(req.db);
+      const { userId, startDate, endDate } = req.query;
+      let table = [];
+      let pending = 0;
+      let approved = 0;
+      let rejected = 0;
+
+      table = await store.getOT(userId, startDate, endDate);
+      pending = await store.getOTStatCount("Pending", startDate, endDate);
+      approved = await store.getOTStatCount("Approved", startDate, endDate);
+      rejected = await store.getOTStatCount("Rejected", startDate, endDate);
+      return res.status(200).send({
+        success: true,
+        data: { table, pending, approved, rejected },
       });
     } catch (err) {
       next(err);
@@ -288,20 +312,22 @@ function calculateStatusAndTimes(
         }
       } else if (hour >= 9) {
         if (currentTime > buildTime(checkTime.end) && status === "Present") {
-          status = "Overtime";
+          // status = "Overtime";
+          otStatus = "Pending"
           overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
         } else if (
           currentTime > buildTime(checkTime.end) &&
           status === "Late"
         ) {
-          status = "Late & Overtime";
+          // status = "Late & Overtime";
+          otStatus = "Pending";
           overtime = getTimeDifference(currentTime, buildTime(checkTime.start));
         }
       }
       break; // Exit the loop after finding the applicable role
     }
   }
-  return { status, undertime, overtime };
+  return { status, undertime, overtime, otStatus };
 }
 
 module.exports = AttendaceService;
