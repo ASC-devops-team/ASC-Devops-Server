@@ -12,16 +12,17 @@ class AttendanceStore {
   async clockin(body) {
     try {
       const result = await this.db(this.table).insert({
-        date: body.date,
-        name: body.name,
-        setting: body.setting,
-        clock_in: body.clock_in,
-        clock_out: body.clock_out,
-        late: body.late,
-        undertime: body.undertime,
-        overtime: body.overtime,
-        status: body.status,
-        user_id: body.user_id,
+        date: body?.date,
+        name: body?.name,
+        setting: body?.setting,
+        clock_in: body?.clock_in,
+        clock_out: body?.clock_out,
+        late: body?.late,
+        undertime: body?.undertime,
+        overtime: body?.overtime,
+        status: body?.status,
+        user_id: body?.user_id,
+        leave_id: body?.leave_id,
       });
       return result;
     } catch (error) {
@@ -36,6 +37,7 @@ class AttendanceStore {
         .select()
         .where(this.cols.userid, userId)
         .andWhere(this.cols.date, date)
+        .andWhereNot(this.cols.status, "On Leave")
         .first();
       if (result) {
         return result;
@@ -104,13 +106,66 @@ class AttendanceStore {
   // Stat Count
   async getStatCount(toCount, startDate, endDate) {
     try {
+      const currentDate = new Date();
       const result = await this.db(this.table)
         .count()
         .where(this.cols.status, "like", `%${toCount}%`)
-        .whereBetween("date", [startDate, endDate]);
+        .whereBetween("date", [startDate, endDate])
+        .where("date", "<=", currentDate.toISOString());
       const statCount = result[0]["count(*)"] || 0;
       return statCount;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  // Stat Count for OT approval
+  async getOTStatCount(toCount, startDate, endDate) {
+    try {
+      const currentDate = new Date();
+      const result = await this.db(this.table)
+        .count()
+        .where(this.cols.otStatus, "like", `%${toCount}%`)
+        .whereBetween("date", [startDate, endDate])
+        .where("date", "<=", currentDate.toISOString());
+      const statCount = result[0]["count(*)"] || 0;
+      return statCount;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  //GET OT for approval
+  async getOT(userId, startDate, endDate) {
+    try {
+      let query = this.db(this.table)
+        .select()
+        .whereNotNull(this.cols.otStatus)
+        .orderBy([
+          { column: "date", order: "desc" },
+          { column: "clock_in", order: "desc" },
+          { column: "clock_out", order: "desc" },
+        ]);
+      if (userId !== undefined && userId !== null && userId !== "") {
+        query.where("user_id", userId);
+      }
+      if (startDate && endDate) {
+        query.whereBetween("date", [startDate, endDate]);
+      }
+      const results = await query;
+      // Filter out data with dates beyond the current date
+      const currentDate = new Date();
+      const filteredResults = results.filter((row) => {
+        const rowDate = new Date(row.date);
+        return rowDate <= currentDate;
+      });
+      const convertedResults = convertDatesToTimezone(
+        filteredResults.map((row) => ({ ...row })),
+        [this.cols.date]
+      );
+      return convertedResults;
+    } catch (error) {
+      // Add more specific error handling if needed
       throw error;
     }
   }
@@ -151,6 +206,7 @@ class AttendanceStore {
           undertime: body.undertime,
           overtime: body.overtime,
           status: body.status,
+          ot_status: body.ot_status,
           user_id: body.user_id,
         })
         .where("uuid", body.uuid);
@@ -169,14 +225,22 @@ class AttendanceStore {
   // }
 
   // DELETE
-  // async delete(uuid) {
-  //   const deletedRows = await this.db(this.table)
-  //     .where(this.cols.id, uuid)
-  //     .select("*")
-  //     .first();
-  //   await this.db(this.table).where(this.cols.id, uuid).del();
-  //   return deletedRows;
-  // }
+  async delete(data) {
+    try {
+      const deletedRows = await this.db(this.table)
+        .select()
+        .where("leave_id", data.uuid)
+        .andWhere(this.cols.userid, data.user_id);
+      await this.db(this.table)
+        .where("leave_id", data.uuid)
+        .andWhere(this.cols.userid, data.user_id)
+        .del();
+      return deletedRows;
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      throw error; // Re-throw the error to be handled by the calling code
+    }
+  }
 }
 
 function formatDate(dateString) {

@@ -24,6 +24,9 @@ router.put("/attendance/out", db, asyncHandler(service.clockout));
 // READS
 router.get("/attendance/get", db, asyncHandler(service.getData));
 
+// Get OT for approval
+router.get("/attendance/get/ot", db, asyncHandler(service.getOT));
+
 // UPDATE ATTENDANCE DTR
 router.put("/attendance/update", db, asyncHandler(service.update));
 

@@ -19,6 +19,7 @@ class EventStore {
         type: body?.type,
         notes: body?.notes,
         user_id: body?.user_id,
+        leave_id: body?.leave_id,
       });
       return result;
     } catch (error) {
@@ -46,6 +47,24 @@ class EventStore {
     try {
       // Remove the unnecessary select("*").first() line
       const deletedRows = await this.db("events").where("uuid", uuid).del();
+      return deletedRows;
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      throw error; // Re-throw the error to be handled by the calling code
+    }
+  }
+
+  // DELETE Leave event
+  async deleteLeaveEvent(body) {
+    try {
+      const deletedRows = await this.db("events")
+        .select()
+        .where("leave_id", body.uuid)
+        .andWhere("user_id", body.user_id);
+      await this.db("events")
+        .where("leave_id", body.uuid)
+        .andWhere("user_id", body.user_id)
+        .del();
       return deletedRows;
     } catch (error) {
       console.error("Error deleting row:", error);
