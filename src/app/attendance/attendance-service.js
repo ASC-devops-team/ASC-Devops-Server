@@ -290,6 +290,7 @@ function calculateStatusAndTimes(
 ) {
   let undertime = null;
   let overtime = null;
+  let otStatus = null;
   const hour = parseInt(totalWorkHours.split(":")[0]);
   for (const checkTime of checkTimes) {
     if (userRole === checkTime.access_level) {
