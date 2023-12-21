@@ -7,7 +7,7 @@
     "dev": "nodemon app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ray Hernandez <hernandezraymondm@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -26,6 +26,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
-  }
+    "nodemon": "^2.0.22",
+    "prettier": "^3.1.1"
+  },
+  "repository": "https://github.com/ASC-devops-team/ASC-Devops-Server.git"
 }
