@@ -7,7 +7,7 @@
     "dev": "nodemon app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Mark Kevin Adona <adonamarkkevin@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -27,5 +27,6 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
-  }
+  },
+  "repository": "https://github.com/ASC-devops-team/ASC-Devops-Server.git"
 }
